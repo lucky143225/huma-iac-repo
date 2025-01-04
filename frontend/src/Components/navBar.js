@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 function Navbar() {
-  const name = JSON.parse(localStorage.getItem("userInfo")).name;
+  const name = JSON.parse(localStorage.getItem("userInfo"))?.name;
   return (
     <nav className="bg-white shadow-md">
       <div className=" items-center justify-between">
