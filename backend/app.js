@@ -7,9 +7,11 @@ const errorHandler = require('./middleware/errorMiddleware');
 const sequelize = require('./config/database'); // Import the Sequelize instance
 const { configDotenv } = require("dotenv").config();
 const app = express();
+const cors = require('cors')
 
 app.use(bodyParser.json());
 app.use(logger); // HTTP request logging
+app.use(cors())
 
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
@@ -25,6 +27,8 @@ sequelize.sync({ force: false }) // { force: false } to not drop tables, { force
   .catch((err) => {
     console.error('Error syncing database:', err);
   });
-app.listen(process.env.BACKEND_PORT, () => {
-  console.log(`Port running on : ${process.env.BACKEND_PORT}`);
+
+  const PORT = process.env.BACKEND_PORT  || 3000;
+app.listen(PORT, () => {
+  console.log(`Port running on : ${PORT}`);
 });

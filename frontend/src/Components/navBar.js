@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 function Navbar() {
+  const name = JSON.parse(localStorage.getItem("userInfo")).name;
   return (
     <nav className="bg-white shadow-md">
       <div className=" items-center justify-between">
@@ -23,7 +24,7 @@ function Navbar() {
           <div className="flex items-center gap-2 px-4">
             <Link to="/login">
               <button className="px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200">
-                Login
+                { name ?? 'Login'}
               </button>
             </Link>
           </div>
