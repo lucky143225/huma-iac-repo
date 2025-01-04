@@ -1,0 +1,12 @@
+aws_region       = "us-west-2"
+aws_profile      = "herovired"
+ami_id           = "ami-07d9cf938edb0739b"        
+instance_type    = "t2.micro"
+instance_name    = "MyComprehensiveEC2Instance"
+key_name         = "lucky-hv"        
+private_key_path = "/Users/A2354661/Desktop/New-Backup/python-practice/huma-iac-repo/ec2/lucky-hv.pem"  
+allowed_ip_ranges = ["0.0.0.0/0"]       
+root_volume_size  = 30                  
+enable_detailed_monitoring = false
+termination_protection = false
+stop_protection = false

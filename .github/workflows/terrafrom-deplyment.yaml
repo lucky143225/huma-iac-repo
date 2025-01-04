@@ -1,0 +1,50 @@
+name: Terraform EC2 Deployment
+
+on:
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  terraform:
+    name: Deploy EC2 Instance with Terraform
+    runs-on: ubuntu-latest
+
+    env:
+      TF_LOG: INFO
+      AWS_REGION: "us-west-2" # Update this to your preferred region
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7 # Update this to your required version
+          cli_config_credentials_token: ${{ secrets.TF_CLI_CONFIG_TOKEN }}
+
+      # Step 3: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Step 4: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 5: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars"
+
+      # Step 6: Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
+      # Step 7: Output Elastic IP
+      - name: Output Elastic IP
+        run: |
+          terraform output elastic_ip
