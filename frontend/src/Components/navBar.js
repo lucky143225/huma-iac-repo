@@ -19,6 +19,12 @@ function Navbar() {
               Excellence in Professional Consulting
             </span>
           </div>
+          <div className="text-center px-4 flex flex-col items-center relative left-[-2rem]">
+  <span className="text-5xl font-bold animate-pulsePopUp">
+    29<span className="text-xl relative bottom-5" >+</span>
+  </span>
+  <span className="text-xl animate-pulsePopUp">Years of Experience</span>
+</div>
           {/* Contact Info */}
           <div className="flex items-center gap-2 px-4">
             <Link to="/login">

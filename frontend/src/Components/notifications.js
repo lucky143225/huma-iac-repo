@@ -14,7 +14,12 @@ function Notifications() {
         <h2 class="text-3xl font-bold mb-8">Notifications</h2>
         <div class="space-y-6">
           <div class="flex gap-2">
-            <span class="text-white font-bold mt-1">New</span>
+            <span
+              className="text-white font-bold mt-1 px-2 py-1 bg-blue-500 rounded-lg shadow-lg animate-pulse inline-block h-fit"
+            >
+              New
+            </span>
+
             <p class="text-lg leading-relaxed">
               The Transferable Development Rights (TDR) platform under the HMDA
               jurisdiction is now digitized. All TDRs will be processed
@@ -23,7 +28,11 @@ function Notifications() {
             </p>
           </div>
           <div class="flex gap-2">
-            <span class="text-white font-bold mt-1">New</span>
+            <span
+              className="text-white font-bold mt-1 px-2 py-1 bg-blue-500 rounded-lg shadow-lg animate-pulse inline-block h-fit"
+            >
+              New
+            </span>
             <p class="text-lg leading-relaxed">
               All types of Building Permissions, Occupancy Certificates (O.C),
               and Layout permissions, Group Housing Permission, (except Change
@@ -36,7 +45,11 @@ function Notifications() {
             </p>
           </div>
           <div class="flex gap-2">
-            <span class="text-white font-bold mt-1">New</span>
+            <span
+              className="text-white font-bold mt-1 px-2 py-1 bg-blue-500 rounded-lg shadow-lg animate-pulse inline-block h-fit"
+            >
+              New
+            </span>
             <p class="text-lg leading-relaxed">
               The Transferable Development Rights (TDR) platform under the HMDA
               jurisdiction is now digitized. All TDRs will be processed
@@ -60,10 +73,10 @@ function Notifications() {
               </div>
               <div className="mt-4 text-center">
                 <h3 className="text-xl font-bold text-gray-900">
-                  Land & <br />
-                  Zone Conversion
+                  Building & <br />
+                  Layout Permission
                 </h3>
-                
+
               </div>
             </div>
           </div>
@@ -81,7 +94,7 @@ function Notifications() {
                   Land & <br />
                   Zone Conversion
                 </h3>
-                
+
               </div>
             </div>
           </div>
@@ -99,7 +112,7 @@ function Notifications() {
                   Architectural & <br />
                   Structural Designs
                 </h3>
-                
+
               </div>
             </div>
           </div>
@@ -116,7 +129,7 @@ function Notifications() {
                   NOC - <br />
                   Airport Authority
                 </h3>
-                
+
               </div>
             </div>
           </div>
@@ -125,10 +138,10 @@ function Notifications() {
           <div className="flex flex-col items-center">
             <div className="relative group flex flex-col items-center">
               <div className="w-32 h-32 rounded-full overflow-hidden bg-white shadow-[0_8px_15px_2px_rgba(0,0,0,0.2)]">
-              <div className="w-full h-full flex items-center justify-center text-white">
-              <GlobeAltIcon className="w-16 h-16 text-gray-900" />
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  <GlobeAltIcon className="w-16 h-16 text-gray-900" />
                 </div>
-                
+
               </div>
               <div className="mt-4 text-center">
                 <h3 className="text-xl font-bold text-gray-900">
@@ -141,14 +154,14 @@ function Notifications() {
 
           <div className="flex flex-col items-center justify-center">
 
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-300 shadow-[0_8px_15px_2px_rgba(0,0,0,0.2)]">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-300 shadow-[0_8px_15px_2px_rgba(0,0,0,0.2)]">
               <div className="w-full h-full flex items-center justify-center text-white">
-              <ArrowRightIcon className="w-16 h-16 text-gray-900" />
-                </div>
+                <ArrowRightIcon className="w-16 h-16 text-gray-900" />
               </div>
-              <div >
-                <h1 className="text-xl my-4 font-mono font-bold text-black">See More</h1>
-                </div>
+            </div>
+            <div >
+              <h1 className="text-xl my-4 font-mono font-bold text-black">See More</h1>
+            </div>
           </div>
 
           {/* Image 6
