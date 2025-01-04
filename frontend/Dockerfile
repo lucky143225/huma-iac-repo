@@ -8,6 +8,7 @@ COPY . .
 # Stage 2: Production stage (small runtime image)
 FROM node:18-alpine
 WORKDIR /app
+RUN apk add --no-cache curl
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app .
 EXPOSE 3000
