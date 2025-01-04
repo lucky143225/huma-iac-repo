@@ -1,0 +1,68 @@
+name: Deploy Application
+
+on:
+  workflow_dispatch: # Manual trigger
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+  EC2_USER: ${{ secrets.EC2_USER }}
+  BACKEND_IMAGE: backend-app:latest
+  FRONTEND_IMAGE: frontend-app:latest
+  NGINX_IMAGE: nginx-proxy:latest
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Clone the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Step 2: Log in to Docker Hub
+    - name: Log in to Docker Hub
+      run: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+
+    # Step 3: Build and push Backend Docker image
+    - name: Build and Push Backend Image
+      run: |
+        docker build -t ${DOCKER_USERNAME}/${BACKEND_IMAGE} ./backend
+        docker push ${DOCKER_USERNAME}/${BACKEND_IMAGE}
+
+    # Step 4: Build and push Frontend Docker image
+    - name: Build and Push Frontend Image
+      run: |
+        docker build -t ${DOCKER_USERNAME}/${FRONTEND_IMAGE} ./frontend
+        docker push ${DOCKER_USERNAME}/${FRONTEND_IMAGE}
+
+    # Step 5: Build and push Nginx Docker image
+    - name: Build and Push Nginx Image
+      run: |
+        docker build -t ${DOCKER_USERNAME}/${NGINX_IMAGE} ./nginx
+        docker push ${DOCKER_USERNAME}/${NGINX_IMAGE}
+
+    # Step 6: Deploy to EC2 via SSH
+    - name: Deploy Application on EC2
+      uses: appleboy/ssh-action@v0.5.4
+      with:
+        host: ${{ env.EC2_HOST }}
+        username: ${{ env.EC2_USER }}
+        key: ${{ env.SSH_PRIVATE_KEY }}
+        script: |
+          # Pull Docker images
+          docker pull ${DOCKER_USERNAME}/${BACKEND_IMAGE}
+          docker pull ${DOCKER_USERNAME}/${FRONTEND_IMAGE}
+          docker pull ${DOCKER_USERNAME}/${NGINX_IMAGE}
+
+          # Run backend container
+          docker run -d --name backend-app -p 5000:5000 ${DOCKER_USERNAME}/${BACKEND_IMAGE}
+
+          # Run frontend containers (for load balancing)
+          docker run -d --name frontend-app-1 -p 3001:3000 ${DOCKER_USERNAME}/${FRONTEND_IMAGE}
+          docker run -d --name frontend-app-2 -p 3002:3000 ${DOCKER_USERNAME}/${FRONTEND_IMAGE}
+
+          # Run Nginx container
+          docker run -d --name nginx-proxy -p 80:80 --link frontend-app-1 --link frontend-app-2 ${DOCKER_USERNAME}/${NGINX_IMAGE}
