@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
-const secretKey = 'test123'; // Replace with environment variable
 
-function generateToken(userId) {
-  return jwt.sign({ userId }, secretKey, { expiresIn: '1h' });
-}
+const generateToken = (user) => {
+  return jwt.sign(
+    { userId: user.id, role: user.role }, // Include 'role'
+    process.env.SECRETKEY,
+    { expiresIn: '1h' }
+  );
+};
 
 module.exports = { generateToken };

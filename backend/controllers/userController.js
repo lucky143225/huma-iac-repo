@@ -7,7 +7,7 @@ const { generateToken } = require('../utils/generateToken');
 // User Registration
 async function register(req, res) {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, phonenumber, password } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ where: { email } });
@@ -21,11 +21,9 @@ async function register(req, res) {
       username,
       email,
       password: hashedPassword,
+      phonenumber,
     });
-
-    const token = generateToken(user.id);
-
-    res.status(201).json({ user, token });
+    res.status(201).json({ user });
   } catch (error) {
     res.status(500).json({ message: 'Registration failed', error: error.message });
   }
@@ -33,11 +31,16 @@ async function register(req, res) {
 
 // User Login
 async function login(req, res) {
-  const { email, password } = req.body;
-  
-  const user = await User.findOne({ where: { email } });
+  const { email, password, phonenumber } = req.body;
+  let user;
+  if(req.body.email){
+   user = await User.findOne({ where: { email } });
   if (!user) return res.status(400).json({ message: 'User not found' });
-
+  }
+  if(req.body.phonenumber){
+     user = await User.findOne({ where: { phonenumber } });
+    if (!user) return res.status(400).json({ message: 'User not found' });
+  }
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -49,7 +52,7 @@ async function login(req, res) {
 // Update User
 async function updateUser(req, res) {
   const { userId } = req.query;
-  const { username, email } = req.body;
+  const { username, email, phonenumber } = req.body;
   if (!userId) {
     return res.status(400).json({ message: 'userId is required' });
   }
@@ -59,6 +62,7 @@ async function updateUser(req, res) {
 
     user.username = username || user.username;
     user.email = email || user.email;
+    user.phonenumber = phonenumber || user.phonenumber;
 
     await user.save();
     res.status(200).json({ message: 'User updated successfully', user });
