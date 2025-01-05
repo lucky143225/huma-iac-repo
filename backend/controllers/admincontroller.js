@@ -1,8 +1,8 @@
 const { urlencoded } = require("body-parser");
 const User = require("../models/userModel");
 const { hashPassword } = require("../utils/hashPassword");
-const { generateToken } = require('../utils/generateToken');
-const bcrypt = require('bcryptjs');
+const { generateToken } = require("../utils/generateToken");
+const bcrypt = require("bcryptjs");
 // Admin Registration
 async function register(req, res) {
   try {
@@ -32,18 +32,18 @@ async function register(req, res) {
 async function login(req, res) {
   const { email, password, phoneNumber } = req.body;
   let user;
-  if(req.body.email){
-   user = await User.findOne({ where: { email } });
-  if (!user) return res.status(400).json({ message: 'User not found' });
+  if (req.body.email) {
+    user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: "User not found" });
   }
-  if(req.body.phoneNumber){
-     user = await User.findOne({ where: { phoneNumber } });
-    if (!user) return res.status(400).json({ message: 'User not found' });
+  if (req.body.phoneNumber) {
+    user = await User.findOne({ where: { phoneNumber } });
+    if (!user) return res.status(400).json({ message: "User not found" });
   }
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+  if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
   const token = await generateToken(user);
-  
+
   res.status(200).json({ user, token });
 }
 // Admin can update user
@@ -90,7 +90,7 @@ async function deleteUser(req, res) {
 // Admin can get all users
 async function getAllUsers(req, res) {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({ where: { role: "user" } });
     res.status(200).json({ users });
   } catch (error) {
     res

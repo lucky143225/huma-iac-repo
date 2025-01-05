@@ -1,8 +1,9 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
-const { hashPassword } = require('../utils/hashPassword');
-const { generateToken } = require('../utils/generateToken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/userModel");
+const { hashPassword } = require("../utils/hashPassword");
+const { generateToken } = require("../utils/generateToken");
+const { isVerified } = require("../utils/generateEmailOtp");
 
 // User Registration
 async function register(req, res) {
@@ -11,7 +12,8 @@ async function register(req, res) {
 
     // Check if user exists
     const userExists = await User.findOne({ where: { email } });
-    if (userExists) return res.status(400).json({ message: 'User already exists' });
+    if (userExists)
+      return res.status(400).json({ message: "User already exists" });
 
     // Hash password
     const hashedPassword = await hashPassword(password);
@@ -25,7 +27,43 @@ async function register(req, res) {
     });
     res.status(201).json({ user });
   } catch (error) {
-    res.status(500).json({ message: 'Registration failed', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
+  }
+}
+async function verifyEmailOtpAndRegister(req, res) {
+  try {
+    const { firstName, lastName, email, phoneNumber, password } = req.body;
+    const isVerifiedOtp = await isVerified(email);
+    console.log(`Verifying email`, isVerifiedOtp);
+    if (!isVerifiedOtp) {
+      return res
+        .status(400)
+        .json({ message: "Email is not verified. Please verify OTP first." });
+    }
+    // Check if user exists
+    const userExists = await User.findOne({ where: { email } });
+    if (userExists)
+      return res.status(400).json({ message: "User already exists" });
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // Create user
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      phoneNumber,
+      isVerified: isVerifiedOtp,
+    });
+    res.status(201).json({ user });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
   }
 }
 async function verifyOTPAndRegister(req, res) {
@@ -34,7 +72,7 @@ async function verifyOTPAndRegister(req, res) {
   try {
     const user = await User.findOne({ where: { phoneNumber } });
 
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const hashedPassword = await hashPassword(password);
     // Check OTP validity
@@ -43,7 +81,7 @@ async function verifyOTPAndRegister(req, res) {
       user.isVerified = true;
       user.otp = null; // Clear OTP
       user.otpExpiry = null;
-    
+
       // Save other user details
       user.firstName = firstName;
       user.lastName = lastName;
@@ -51,32 +89,34 @@ async function verifyOTPAndRegister(req, res) {
       user.password = hashedPassword; // Hash password
       await user.save();
 
-      return res.status(200).json({ message: 'User registered successfully.' });
+      return res.status(200).json({ message: "User registered successfully." });
     } else {
-      return res.status(400).json({ message: 'Invalid OTP or OTP expired.' });
+      return res.status(400).json({ message: "Invalid OTP or OTP expired." });
     }
   } catch (err) {
-    res.status(500).json({ message: 'Error verifying OTP', error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error verifying OTP", error: err.message });
   }
-};
+}
 
 // User Login
 async function login(req, res) {
   const { email, password, phoneNumber } = req.body;
   let user;
-  if(req.body.email){
-   user = await User.findOne({ where: { email } });
-  if (!user) return res.status(400).json({ message: 'User not found' });
+  if (req.body.email) {
+    user = await User.findOne({ where: { email } });
+    if (!user) return res.status(400).json({ message: "User not found" });
   }
-  if(req.body.phoneNumber){
-     user = await User.findOne({ where: { phoneNumber } });
-    if (!user) return res.status(400).json({ message: 'User not found' });
+  if (req.body.phoneNumber) {
+    user = await User.findOne({ where: { phoneNumber } });
+    if (!user) return res.status(400).json({ message: "User not found" });
   }
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+  if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
   const token = generateToken(user.id);
-  
+
   res.status(200).json({ user, token });
 }
 
@@ -85,11 +125,11 @@ async function updateUser(req, res) {
   const { userId } = req.query;
   const { firstName, lastName, email, phoneNumber } = req.body;
   if (!userId) {
-    return res.status(400).json({ message: 'userId is required' });
+    return res.status(400).json({ message: "userId is required" });
   }
   try {
     const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
@@ -97,9 +137,9 @@ async function updateUser(req, res) {
     user.phoneNumber = phoneNumber || user.phoneNumber;
 
     await user.save();
-    res.status(200).json({ message: 'User updated successfully', user });
+    res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
-    res.status(500).json({ message: 'Update failed', error: error.message });
+    res.status(500).json({ message: "Update failed", error: error.message });
   }
 }
 
@@ -107,17 +147,24 @@ async function updateUser(req, res) {
 async function deleteUser(req, res) {
   const { userId } = req.query;
   if (!userId) {
-    return res.status(400).json({ message: 'userId is required' });
+    return res.status(400).json({ message: "userId is required" });
   }
   try {
     const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     await user.destroy();
-    res.status(200).json({ message: 'User deleted successfully' });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Delete failed', error: error.message });
+    res.status(500).json({ message: "Delete failed", error: error.message });
   }
 }
 
-module.exports = { register, verifyOTPAndRegister, login, updateUser, deleteUser };
+module.exports = {
+  register,
+  verifyOTPAndRegister,
+  login,
+  updateUser,
+  deleteUser,
+  verifyEmailOtpAndRegister,
+};
