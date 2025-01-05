@@ -2,24 +2,26 @@ const Joi = require('joi');
 
 // User registration schema
 const registerUserSchema = Joi.object({
-  username: Joi.string().min(3).max(30).required(),
+  firstName: Joi.string().min(3).max(30),
+  lastName:Joi.string().min(3).max(30),
   email: Joi.string().email(),
-  phonenumber: Joi.number(),
-  password: Joi.string().min(6).required(),
+  phoneNumber: Joi.number(),
+  password: Joi.string().min(6),
 });
 
 // User login schema
 const loginUserSchema = Joi.object({
   email: Joi.string().email(),
-  phonenumber: Joi.number(),
-  password: Joi.string().required(),
+  phoneNumber: Joi.number(),
+  password: Joi.string(),
 });
 
 // User update schema
 const updateUserSchema = Joi.object({
-  username: Joi.string().min(3).max(30).optional(),
+  firstName: Joi.string().min(3).max(30).optional(),
+  lastName:Joi.string().min(3).max(30),
   email: Joi.string().email().optional(),
-  phonenumber: Joi.number(),
+  phoneNumber: Joi.number(),
   password: Joi.string().min(6).optional(),
 });
 
