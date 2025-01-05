@@ -6,8 +6,10 @@ import {
   GlobeAltIcon,
   ArrowRightIcon
 } from "@heroicons/react/24/outline";
+import {  useNavigate } from "react-router-dom";
 
 function Notifications() {
+  const navigate = useNavigate();
   return (
     <div className="flex my-6 mx-10 shadow-[0_8px_15px_2px_rgba(0,0,0,0.2)] rounded-2xl h-[100vh]">
       <div class=" my-4 mx-4 w-1/2 bg-[#26abff] text-white p-8 rounded-lg h-[95vh]">
@@ -153,7 +155,7 @@ function Notifications() {
           </div>
 
           <div className="flex flex-col items-center justify-center">
-
+            <button onClick={()=>{navigate('/services')}}>
             <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-300 shadow-[0_8px_15px_2px_rgba(0,0,0,0.2)]">
               <div className="w-full h-full flex items-center justify-center text-white">
                 <ArrowRightIcon className="w-16 h-16 text-gray-900" />
@@ -162,6 +164,7 @@ function Notifications() {
             <div >
               <h1 className="text-xl my-4 font-mono font-bold text-black">See More</h1>
             </div>
+            </button>
           </div>
 
           {/* Image 6
