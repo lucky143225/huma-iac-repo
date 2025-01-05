@@ -29,7 +29,7 @@ RUN npm run build
 # Stage 3: Final Image with Nginx
 FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
-COPY --from=frontend-build /app/frontend ./frontend
+COPY --from=frontend-build /app/frontend/build ./frontend
 COPY --from=backend-build /app/backend ./backend
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
