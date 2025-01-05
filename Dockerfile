@@ -15,7 +15,7 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install --production --no-cache
 COPY backend ./
-RUN npm run build
+RUN npm start
 
 
 # Stage 2: Build Frontend
