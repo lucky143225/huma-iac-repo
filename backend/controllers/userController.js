@@ -7,7 +7,7 @@ const { generateToken } = require('../utils/generateToken');
 // User Registration
 async function register(req, res) {
   try {
-    const { username, email, phonenumber, password } = req.body;
+    const { firstName, email, phoneNumber, password } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ where: { email } });
@@ -18,27 +18,58 @@ async function register(req, res) {
 
     // Create user
     const user = await User.create({
-      username,
+      firstName,
       email,
       password: hashedPassword,
-      phonenumber,
+      phoneNumber,
     });
     res.status(201).json({ user });
   } catch (error) {
     res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 }
+async function verifyOTPAndRegister(req, res) {
+  const { firstName, lastName, email, password, phoneNumber, otp } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { phoneNumber } });
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const hashedPassword = await hashPassword(password);
+    // Check OTP validity
+    if (user.otp === otp && user.otpExpiry > new Date()) {
+      // Mark phone as verified
+      user.isVerified = true;
+      user.otp = null; // Clear OTP
+      user.otpExpiry = null;
+    
+      // Save other user details
+      user.firstName = firstName;
+      user.lastName = lastName;
+      user.email = email;
+      user.password = hashedPassword; // Hash password
+      await user.save();
+
+      return res.status(200).json({ message: 'User registered successfully.' });
+    } else {
+      return res.status(400).json({ message: 'Invalid OTP or OTP expired.' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Error verifying OTP', error: err.message });
+  }
+};
 
 // User Login
 async function login(req, res) {
-  const { email, password, phonenumber } = req.body;
+  const { email, password, phoneNumber } = req.body;
   let user;
   if(req.body.email){
    user = await User.findOne({ where: { email } });
   if (!user) return res.status(400).json({ message: 'User not found' });
   }
-  if(req.body.phonenumber){
-     user = await User.findOne({ where: { phonenumber } });
+  if(req.body.phoneNumber){
+     user = await User.findOne({ where: { phoneNumber } });
     if (!user) return res.status(400).json({ message: 'User not found' });
   }
   const isMatch = await bcrypt.compare(password, user.password);
@@ -52,7 +83,7 @@ async function login(req, res) {
 // Update User
 async function updateUser(req, res) {
   const { userId } = req.query;
-  const { username, email, phonenumber } = req.body;
+  const { firstName, lastName, email, phoneNumber } = req.body;
   if (!userId) {
     return res.status(400).json({ message: 'userId is required' });
   }
@@ -60,9 +91,10 @@ async function updateUser(req, res) {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    user.username = username || user.username;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
     user.email = email || user.email;
-    user.phonenumber = phonenumber || user.phonenumber;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
 
     await user.save();
     res.status(200).json({ message: 'User updated successfully', user });
@@ -88,4 +120,4 @@ async function deleteUser(req, res) {
   }
 }
 
-module.exports = { register, login, updateUser, deleteUser };
+module.exports = { register, verifyOTPAndRegister, login, updateUser, deleteUser };

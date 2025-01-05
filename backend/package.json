@@ -23,6 +23,7 @@
     "nodemon": "^3.1.9",
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7",
+    "twilio": "^5.4.0",
     "winston": "^3.17.0"
   }
 }
