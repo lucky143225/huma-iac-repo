@@ -9,9 +9,15 @@ const { configDotenv } = require("dotenv").config();
 const app = express();
 const cors = require('cors')
 
+const corsOptions = {
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'],   // Allowed headers
+  credentials: true, // Allow cookies and authorization headers
+};
 app.use(bodyParser.json());
 app.use(logger); // HTTP request logging
-app.use(cors())
+app.use(cors(corsOptions))
 
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
