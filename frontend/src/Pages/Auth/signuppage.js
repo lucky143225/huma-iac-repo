@@ -6,9 +6,6 @@ import axios from 'axios';
 
 export default function SignupScreen() {
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const redirectInUrl = new URLSearchParams(search).get('redirect');
-  const redirect = redirectInUrl ? redirectInUrl : '/';
 
   const [username, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,26 +15,33 @@ export default function SignupScreen() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    const port = process.env.REACT_APP_BACKEND_PORT || "localhost:3000";
+    
+    console.log('Submit triggered');
+    console.log(port);
+    
     if (password !== confirmPassword) {
-      // toast.error('Passwords do not match');
+      console.error('Passwords do not match');
       return;
     }
     try {
-      const { data } = await axios.post(`http://${process.env.REACT_APP_BACKEND_PORT}/api/users/register`, {
+      const { data } = await axios.post(`http://${port}/api/users/register`, {
         username,
         email,
         password,
       });
-      // ctxDispatch({ type: 'USER_SIGNIN', payload: data });
-      localStorage.setItem('userInfo', JSON.stringify({name: data.user.username, email:data.user.email}));
-      navigate(redirect || '/');
+      console.log('API Response:', data);
+      localStorage.setItem('userInfo', JSON.stringify({ name: data.user.username, email: data.user.email }));
+      navigate('/home');
     } catch (err) {
-      // toast.error(getError(err));
+      console.error('API Error:', err);
     }
+  
   };
 
   useEffect(() => {
-  }, [navigate, redirect]);
+  }, [navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 p-4">
