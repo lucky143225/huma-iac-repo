@@ -1,0 +1,49 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+
+    steps:
+      # Step 1: Checkout the code from the GitHub repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}  
+
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 3: Set up Docker Buildx for building the Docker image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 4: Get short commit hash (first 7 characters of the commit SHA)
+      - name: Get short commit hash
+        id: get_commit_hash
+        run: echo "SHORT_COMMIT_HASH=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
+
+      # Step 5: Build the Docker image using the Dockerfile
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/nginx:${{ env.SHORT_COMMIT_HASH }}"
+          docker build -t $IMAGE_NAME .
+          echo "Built image with tag $IMAGE_NAME"
+
+      # Step 6: Push the Docker image to Docker Hub
+      - name: Push Docker image
+        run: |
+          docker push $IMAGE_NAME
+          echo "Pushed image with tag $IMAGE_NAME"
