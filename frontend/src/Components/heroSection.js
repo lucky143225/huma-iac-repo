@@ -2,12 +2,11 @@ import { useState, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import img1 from "../photo1.webp";
 import img2 from "../photo2.png";
-import img3 from '../photo3.webp';
-
-// rgb(236,255,252)
+import img3 from "../photo3.webp";
+import Navbar from "./navBar";
 
 function HeroSection() {
-  const images = [img1,img2,img3];
+  const images = [img1, img2, img3];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Function to go to the next image
@@ -17,15 +16,13 @@ function HeroSection() {
 
   useEffect(() => {
     // Set up interval for automatic image change
-    const interval = setInterval(nextImage, 5000); // 3 seconds interval
-
-    // Cleanup the interval when the component unmounts
-    return () => clearInterval(interval);
-  }, []); 
+    const interval = setInterval(nextImage, 5000); // 5 seconds interval
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, []);
 
   return (
-    <section className="relative bg-gray-700 text-white h-[70vh]">
-      {/* Carousel Background Images */}
+    <section className="relative bg-gray-700 text-white h-[60vh]">
+      {/* Rotating Background Images */}
       {images.map((image, index) => (
         <Transition
           key={image}
@@ -43,22 +40,14 @@ function HeroSection() {
           ></div>
         </Transition>
       ))}
-
-      <div className="container mx-auto px-4 py-32 relative z-10 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold">
-          Smart Infrastructure
-        </h1>
-        <p className="text-xl md:text-2xl text-[#26abff] mt-4">
-          Modern Urban Planning
-        </p>
-        <p className="text-sm md:text-base text-gray-300 mt-2">
-          Creating world-class infrastructure for tomorrow
-        </p>
-
-        {/* Learn More Button */}
-        <button className="mt-6 px-6 py-3 bg-[#26abff] text-white rounded-lg shadow-lg transition">
-          Learn More
-        </button>
+   
+      {/* Navigation Menu */}
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+      
+      <div className="absolute top-0 w-full bg-blue/70 backdrop-blur-md">
+      <Navbar />
+      
+        </div>
       </div>
     </section>
   );
