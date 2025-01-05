@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
 
 function Navbar() {
-  const name = JSON.parse(localStorage.getItem("userInfo"))?.name;
+  const navigate = useNavigate();
+  const firstname = JSON.parse(localStorage.getItem("userInfo"))?.firstname;
+  const lastname = JSON.parse(localStorage.getItem("userInfo"))?.lastname;
+
+  useEffect(() => {
+  }, [navigate]);
+
   return (
     <nav className="bg-white shadow-md">
       <div className=" items-center justify-between">
@@ -29,11 +36,9 @@ function Navbar() {
 
           {/* Contact Info */}
           <div className="flex items-center gap-2 px-4">
-            <Link to="/login">
-              <button className="px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200">
-                { name ?? 'Login'}
+              <button onClick = {()=>{navigate('/login')}} disabled = {firstname ? true : false} className={ firstname ? "w-full text-xl p-2 py-3 bg-[#26abff] text-white rounded-full font-semibold space-x-2 uppercase" : "px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200" }>
+                { firstname ? firstname?.[0] + ' ' + lastname?.[0] : 'Login'}
               </button>
-            </Link>
           </div>
         </div>
         <div className="bg-[#26abff] p-4">
