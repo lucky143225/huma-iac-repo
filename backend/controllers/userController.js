@@ -8,7 +8,7 @@ const { isVerified } = require("../utils/generateEmailOtp");
 // User Registration
 async function register(req, res) {
   try {
-    const { firstName, email, phoneNumber, password } = req.body;
+    const { firstName, lastName, email, phoneNumber, password } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ where: { email } });
@@ -21,6 +21,7 @@ async function register(req, res) {
     // Create user
     const user = await User.create({
       firstName,
+      lastName,
       email,
       password: hashedPassword,
       phoneNumber,

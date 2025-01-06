@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import img1 from "../photo1.webp";
 import img2 from "../photo2.png";
-import img3 from "../photo3.webp";
+import img3 from '../photo3.webp';
 import Navbar from "./navBar";
+
+// rgb(236,255,252)
 
 function HeroSection() {
   const images = [img1, img2, img3];
@@ -44,7 +46,7 @@ function HeroSection() {
       {/* Navigation Menu */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
       
-      <div className="absolute top-0 w-full bg-blue/70 backdrop-blur-md">
+      <div className="fixed top-0 w-full bg-blue/70 backdrop-blur-md">
       <Navbar />
       
         </div>

@@ -3,6 +3,9 @@ import './App.css';
 import HomePage from './Pages/home-page';
 import SigninScreen from './Pages/Auth/loginpage';
 import SignupScreen from './Pages/Auth/signuppage';
+import Services from './Pages/services';
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   return (
@@ -12,6 +15,7 @@ function App() {
         <Route path='/home' element={<HomePage />} />
         <Route path='/login' element={<SigninScreen />}/>
         <Route path='/signup' element={<SignupScreen />}/>
+        <Route path='/services' element={<Services />} />
       </Routes>
     
     </BrowserRouter>

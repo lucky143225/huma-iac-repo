@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js",
-    "dev": "nodemon index.js --exec babel-node --presets=@babel/preset-env"
+    "dev": "nodemon index.js --exec babel-node --presets=@babel/preset-env",
+    "build": "babel src -d dist --presets @babel/preset-env"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +27,8 @@
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7",
     "twilio": "^5.4.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0"
   }
 }

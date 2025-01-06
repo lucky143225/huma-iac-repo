@@ -5,24 +5,43 @@ import verfiyicon from "../../verify-icon.png"
 import axios from 'axios';
 
 import bgimageicon from '../../photo1.webp'
+import { toast } from 'react-toastify';
 
 
 export default function SignupScreen() {
   const navigate = useNavigate();
 
-  const [firstname, setFirstname] = useState();
-  const [lastname, setLastname] = useState();
+  const [firstName, setfirstName] = useState();
+  const [lastName, setlastName] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   // const [confirmPassword, setConfirmPassword] = useState();
   const [phoneNumber, setPhoneNumber] = useState();
   const [isVerified, setIsVerified] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill());
+  const [emailOtp, setEmailOtp] = useState(Array(6).fill());
   const [generatedOtp, setGeneratedOtp] = useState(false);
-
+  const [emailgeneratedOtp, setEmailGeneratedOtp] = useState(false);
+  const port = process.env.REACT_APP_BACKEND_PORT || "localhost:3000";
   console.log(phoneNumber?.length);
 
 
+  const verifyEmailOTP = async(email,otp) => {
+    try {
+      const emailOTP = await axios.post(`http://${port}/api/users/verify-email-otp`,{
+        email,
+        otp
+      })
+      if(emailOTP.data.message === "OTP verified successfully!"){
+        setIsEmailVerified(true)
+        toast.success("Email Verified")
+      }
+     }catch (err){
+      toast.error(err?.message);
+      console.error('email verification error', err)
+     }
+  }
   // Handle input change for each digit
   const handleOtpChange = (value, index) => {
     const updatedOtp = [...otp];
@@ -35,16 +54,27 @@ export default function SignupScreen() {
     }
 
     // Automatically verify OTP after all 6 digits are entered
-    // if (updatedOtp.every((digit) => digit !== "")) {
-    //   verifyOtp(updatedOtp.join(""));
-    // }
+    if (updatedOtp.every((digit) => digit !== "") && index==5) {
+      verifyEmailOTP(email,updatedOtp.join(""));
+    }
   };
+
+
+  const EmailOtpGenerator = async(email) => {
+     try {
+      const emailOTP = await axios.post(`http://${port}/api/users/send-email-otp`,{
+        email
+      })
+      toast.success("Email Sent Succesfully")
+     }catch (err){
+      toast.error(err?.message);
+      console.error('email verification error', err)
+     }
+  }
 
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    const port = process.env.REACT_APP_BACKEND_PORT || "localhost:3000";
 
     console.log('Submit triggered');
     console.log(port);
@@ -55,14 +85,19 @@ export default function SignupScreen() {
     // }
     try {
       const { data } = await axios.post(`http://${port}/api/users/register`, {
-        firstname,
+        firstName,
+        lastName,
+        phoneNumber,
         email,
         password,
       });
       console.log('API Response:', data);
-      localStorage.setItem('userInfo', JSON.stringify({ name: data.user.firstname, email: data.user.email }));
+      toast.success("Registered Successfully")
+      localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastname, email: data.user.email }));
+      
       navigate('/home');
     } catch (err) {
+      toast.error(err?.message);
       console.error('API Error:', err);
     }
 
@@ -88,10 +123,10 @@ export default function SignupScreen() {
                 First Name
               </label>
               <input
-                id="firstname"
+                id="firstName"
                 type="text"
-                value={firstname}
-                onChange={(e) => setFirstname(e.target.value)}
+                value={firstName}
+                onChange={(e) => setfirstName(e.target.value)}
                 required
                 className="w-full px-3 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
@@ -101,10 +136,10 @@ export default function SignupScreen() {
                 Last Name
               </label>
               <input
-                id="lastname"
+                id="lastName"
                 type="text"
-                value={lastname}
-                onChange={(e) => setLastname(e.target.value)}
+                value={lastName}
+                onChange={(e) => setlastName(e.target.value)}
                 required
                 className="w-full px-3 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
@@ -172,19 +207,68 @@ export default function SignupScreen() {
             </div>
           }
           <div>
+          <div className="flex flex-row items-center ">
             <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
               Email (optional)
             </label>
+            {isEmailVerified && (
+                <img src={verfiyicon} className="ml-2 w-[35px] h-[25px] text-sm font-medium text-green-500 px-1 rounded-lg" />
+              )}
+            </div>
+            <div className="flex flex-row mt-2">
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
 
-              className="w-full px-4 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="w-full px-1 mr-2 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
+            {!isEmailVerified && (
+                <button
+                  disabled={email?.length > 0 ? false : true}
+                  className={`w-4/12 py-2 rounded-lg  hover:bg-green-200 ${email?.length < 1 || !email?.includes("@")
+                    ? "bg-green-100 opacity-50 cursor-not-allowed"
+                    : "bg-green-100 text-green-700"
+                    }`}
+                  onClick={() => {
+                    EmailOtpGenerator(email)
+                    setEmailGeneratedOtp(true);
+                  }}
+                >
+                  Verify
+                </button>
+              )}
+              </div>
           </div>
-
+          <div>
+          {emailgeneratedOtp  && !isEmailVerified &&
+            <div>
+              <label
+                htmlFor="otp"
+                className="block text-sm font-medium text-black mb-2"
+              >
+                Enter OTP
+              </label>
+              <div className="flex space-x-2 mb-4">
+                {emailOtp.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`otp-input-${index}`}
+                    type="text"
+                    value={digit}
+                    onChange={(e) => handleOtpChange(e.target.value, index)}
+                    maxLength="1"
+                    className="w-12 h-12 text-center text-xl font-bold  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                ))}
+              </div>
+              {isEmailVerified && (
+                <p className="text-green-500 text-center font-medium">OTP Verified Successfully!</p>
+              )}
+            </div>
+          }
+          </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-black mb-2">
               Password
