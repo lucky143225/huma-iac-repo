@@ -22,6 +22,11 @@ app.use(cors(corsOptions))
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get('/', (req, res) => {
+  res.send('Welcome Lakshmi Narayana Reddy!');
+});
+
+
 // Global error handler
 app.use(errorHandler);
 
