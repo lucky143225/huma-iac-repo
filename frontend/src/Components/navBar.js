@@ -34,15 +34,8 @@ function Navbar() {
             <span className="text-xl animate-pulsePopUp">Years of Experience</span>
           </div>
 
-          {/* Contact Info */}
-          <div className="flex items-center gap-2 px-4">
-              <button onClick = {()=>{navigate('/login')}} disabled = {firstname ? true : false} className={ firstname ? "w-full text-xl p-2 py-3 bg-[#26abff] text-white rounded-full font-semibold space-x-2 uppercase" : "px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200" }>
-                { firstname ? firstname?.[0] + ' ' + lastname?.[0] : 'Login'}
-              </button>
-          </div>
-        </div>
-        <div className="bg-[#26abff] p-4">
-          <ul className="hidden md:flex space-x-8 text-sm font-medium text-white justify-center">
+          <ul className="flex justify-center space-x-5 text-gray-900 font-semibold">
+
             {[
               "Home",
               "About",
@@ -60,16 +53,12 @@ function Navbar() {
             ))}
           </ul>
 
-          {/* Contact Info */}
           <div className="flex items-center gap-2 px-4">
-            <Link to="/login">
-              <button className="px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200">
-                {name ?? 'Login'}
+              <button onClick = {()=>{navigate('/login')}} disabled = {firstname ? true : false} className={ firstname ? "w-full text-xl p-2 py-3 bg-[#26abff] text-white rounded-full font-semibold space-x-2 uppercase" : "px-6 py-2 bg-[#26abff] text-white rounded-lg font-semibold focus:outline-none focus:ring-2 transition duration-200" }>
+                { firstname ? firstname?.[0] + ' ' + lastname?.[0] : 'Login'}
               </button>
-            </Link>
           </div>
         </div>
-
       </div>
     </nav>
   );
