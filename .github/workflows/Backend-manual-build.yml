@@ -1,4 +1,4 @@
-name: Manual Build and Push
+name: Backend-Manual-Build-Push
 
 on:
   workflow_dispatch:
