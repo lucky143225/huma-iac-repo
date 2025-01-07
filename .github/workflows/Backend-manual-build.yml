@@ -25,6 +25,7 @@ jobs:
       env:
         BUILD_ID: ${{ github.run_id }}
       run: |
+        cd backend
         docker build --build-arg BACKEND_PORT=${{ secrets.BACKEND_PORT }} \
                      --build-arg SECRETKEY=${{ secrets.SECRETKEY }} \
                      --build-arg TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
@@ -32,7 +33,6 @@ jobs:
                      --build-arg TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }} \
                      --build-arg EMAIL_USER=${{ secrets.EMAIL_USER }} \
                      --build-arg EMAIL_PASS=${{ secrets.EMAIL_PASS }} \
-                     -f backend/Dockerfile \
                      -t ${{ secrets.DOCKER_USERNAME }}/myapp:${{ env.BUILD_ID }} .
 
     - name: Push Docker image to Docker Hub with build ID
