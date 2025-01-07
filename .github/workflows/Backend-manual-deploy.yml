@@ -27,10 +27,9 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-        sudo usermod -aG docker ec2-user
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        sudo usermod -aG docker ${{ secrets.VM_USER }}
         docker stop real-estate-backend || true
         docker rm real-estate-backend || true
         docker pull ${{ secrets.DOCKER_USERNAME }}/real-estate-backend:${{ github.event.inputs.build_id }}
         docker run -d --name real-estate-backend -p ${{ secrets.BACKEND_PORT }}:${{ secrets.BACKEND_PORT }} --network mern ${{ secrets.DOCKER_USERNAME }}/real-estate-backend:${{ github.event.inputs.build_id }}
-
