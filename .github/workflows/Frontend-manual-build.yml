@@ -17,7 +17,7 @@ jobs:
 
     - name: Generate .env file from secrets
       run: |
-        cat > backend/.env <<EOL
+        cat > frontend/.env <<EOL
         REACT_APP_BACKEND_PORT=${{ secrets.REACT_APP_BACKEND_PORT }}
         EOL
 
