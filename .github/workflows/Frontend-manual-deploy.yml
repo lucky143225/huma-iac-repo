@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
@@ -32,4 +31,5 @@ jobs:
         docker stop real-estate-frontend || true
         docker rm real-estate-frontend || true
         docker pull ${{ secrets.DOCKER_USERNAME }}/real-estate-frontend:${{ github.event.inputs.build_id }}
-        docker run -d --name real-estate-backend -p 80:80 --network mern ${{ secrets.DOCKER_USERNAME }}/real-estate-frontend:${{ github.event.inputs.build_id }}
+        docker run -d --name real-estate-frontend -p 80:80 --network mern ${{ secrets.DOCKER_USERNAME }}/real-estate-frontend:${{ github.event.inputs.build_id }}
+        EOF
