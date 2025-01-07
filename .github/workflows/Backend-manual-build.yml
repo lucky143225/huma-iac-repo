@@ -1,4 +1,4 @@
-name: Manual Build and Push
+name: Backend-Manual-Build-Push
 
 on:
   workflow_dispatch:
@@ -32,6 +32,7 @@ jobs:
                      --build-arg TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }} \
                      --build-arg EMAIL_USER=${{ secrets.EMAIL_USER }} \
                      --build-arg EMAIL_PASS=${{ secrets.EMAIL_PASS }} \
+                     -f backend/Dockerfile \
                      -t ${{ secrets.DOCKER_USERNAME }}/myapp:${{ env.BUILD_ID }} .
 
     - name: Push Docker image to Docker Hub with build ID
