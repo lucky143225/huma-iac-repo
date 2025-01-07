@@ -18,7 +18,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -28,6 +28,7 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+        sudo usermod -aG docker ec2-user
         docker stop real-estate-backend || true
         docker rm real-estate-backend || true
         docker pull ${{ secrets.DOCKER_USERNAME }}/real-estate-backend:${{ github.event.inputs.build_id }}
