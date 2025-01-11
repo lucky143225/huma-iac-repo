@@ -1,40 +1,32 @@
-# FROM node:18-alpine
-# ENV DOMAIN="http://localhost:3000" \
-#     PORT=3000 
-# WORKDIR /usr/src/app
-# COPY package*.json ./
-# RUN npm install
-# COPY . .
-# EXPOSE 3000
-# CMD ["node", "server.js"]
-
-
-# Stage 1: Build Backend
-FROM node:18-alpine as backend-build
+# Stage 1: Build the backend
+FROM node:18-alpine AS build-backend
 WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install --production --no-cache
-COPY backend ./
-RUN npm start
+COPY backend/ .
 
-
-# Stage 2: Build Frontend
-FROM node:18-alpine as frontend-build
+# Stage 2: Build the frontend
+FROM node:18-alpine AS build-frontend
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install --production --no-cache
-COPY frontend ./
+COPY frontend/ .
 RUN npm run build
 
-# Stage 3: Final Image with Nginx
-FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
-COPY --from=frontend-build /app/frontend/build ./frontend
-COPY --from=backend-build /app/backend ./backend
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+# Stage 3: Setup the final container
+FROM node:18-alpine
+WORKDIR /app
 
+# Copy backend files
+COPY --from=build-backend /app/backend ./
+# Copy frontend build files
+COPY --from=build-frontend /app/frontend/build ./public
+
+# Install process manager
+RUN npm install -g pm2
 
 # Expose ports
-EXPOSE 80
+EXPOSE 3000 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start both backend and frontend
+CMD ["pm2-runtime", "start", "--no-daemon", "npm --prefix /app start", "npx serve -s /app/public -l 80"]
