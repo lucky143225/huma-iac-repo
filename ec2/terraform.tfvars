@@ -1,7 +1,7 @@
 aws_region       = "us-west-2"
 aws_profile      = "herovired"
 ami_id           = "ami-07d9cf938edb0739b"        
-instance_type    = "t2.micro"
+instance_type    = "t3.medium"
 instance_name    = "MyComprehensiveEC2Instance"
 key_name         = "lucky-hv"        
 private_key_path = "/Users/A2354661/Desktop/New-Backup/python-practice/huma-iac-repo/ec2/lucky-hv.pem"  

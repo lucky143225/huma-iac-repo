@@ -22,11 +22,11 @@ COPY --from=build-backend /app/backend ./
 # Copy frontend build files
 COPY --from=build-frontend /app/frontend/build ./public
 
-# Install process manager
-RUN npm install -g pm2
+# Install a simple HTTP server for serving static frontend files
+RUN npm install -g serve
 
 # Expose ports
 EXPOSE 3000 80
 
-# Start both backend and frontend
-CMD ["pm2-runtime", "start", "--no-daemon", "npm --prefix /app start", "npx serve -s /app/public -l 80"]
+# Start both backend and frontend using a shell script
+CMD ["sh", "-c", "npm start & serve -s public -l 80"]
