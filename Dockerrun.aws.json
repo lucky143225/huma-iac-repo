@@ -1,0 +1,30 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "ContainerDefinitions": [
+      {
+        "Name": "frontend",
+        "Image": "lucky1225/real-estate-frontend:12658144212",
+        "Essential": true,
+        "Memory": 512,
+        "PortMappings": [
+          {
+            "HostPort": 80,
+            "ContainerPort": 80
+          }
+        ]
+      },
+      {
+        "Name": "backend",
+        "Image": "lucky1225/real-estate-backend:12657537330",
+        "Essential": true,
+        "Memory": 512,
+        "PortMappings": [
+          {
+            "HostPort": 3000,
+            "ContainerPort": 3000
+          }
+        ]
+      }
+    ]
+  }
+  
