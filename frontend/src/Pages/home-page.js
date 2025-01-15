@@ -1,3 +1,4 @@
+import Client from "../Components/client";
 import Footer from "../Components/footer";
 import HeroSection from "../Components/heroSection";
 import Navbar from "../Components/navBar";
@@ -10,6 +11,7 @@ return (
         {/* <Navbar /> */}
         <HeroSection />
         <Notifications />
+        <Client />
         <Footer />
     </div>
 )

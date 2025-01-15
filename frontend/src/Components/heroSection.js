@@ -4,6 +4,7 @@ import img1 from "../photo1.webp";
 import img2 from "../photo2.png";
 import img3 from "../photo3.webp";
 import Navbar from "./navBar";
+import exp from "../Pictures/exp.jpeg"
 
 function HeroSection() {
   const images = [img1, img2, img3];
@@ -49,6 +50,14 @@ function HeroSection() {
       
         </div>
       </div>
+
+      {/* <div className="absolute left-1 top-1/3 bg-transparent transform -translate-y-1/2">
+    <img
+      src={exp}// Replace with your image URL
+      alt="Rounded"
+      className="w-1/12 h-1/12 rounded-full animate-pulsePopUp border-0"
+    />
+  </div> */}
     </section>
   );
 }

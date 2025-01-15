@@ -4,7 +4,7 @@ import appStore from "../appstore.png";
 
 const Footer = () => {
   return (
-    <footer className="mt-[10vmax] p-[2vmax] bg-[#26abff] text-black flex items-center">
+    <footer className="mt-[10vmax] p-[2vmax] bg-[#26abff] text-black flex items-center" id='footer'>
       <div className="w-[20%] flex flex-col items-center">
         <h4 className="font-roboto text-[1vmax]">DOWNLOAD OUR APP</h4>
         <img src={playStore} alt="playstore" className="w-[10vmax] my-[1vmax] cursor-pointer" />

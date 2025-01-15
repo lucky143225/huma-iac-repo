@@ -9,14 +9,17 @@ function Navbar() {
   useEffect(() => {
   }, [navigate]);
 
+
+
   return (
     <nav className="bg-blue/70 backdrop-blur-md shadow-md">
       <div className=" items-center justify-between">
         <div className="flex items-center pt-2 justify-between">
           <div class="flex flex-col px-4">
             <h1
-              class="text-3xl  font-bold bg-gradient-to-r from-green-900 to-green-600 bg-clip-text  text-transparent"
-              style={{ transform: "none" }}
+              class="text-3xl  font-bold bg-gradient-to-r from-green-900 to-green-600 bg-clip-text  text-transparent cursor-pointer"
+             
+              onClick={()=>navigate('/home')}
             >
               Liasion Consultancy Services
             </h1>
@@ -35,9 +38,7 @@ function Navbar() {
           </div>
 
           <ul className="flex justify-center space-x-5 text-gray-900 font-semibold">
-
             {[
-              "Home",
               "About",
               "Projects",
               "Online Services",
@@ -47,6 +48,29 @@ function Navbar() {
               <li
                 key={link}
                 className="text-base hover:text-green-300 cursor-pointer transition-colors duration-200"
+                onClick={() =>  {
+                  if (link === "Online Services") {
+                    navigate("/services");
+                  } else {
+                    let targetElement;
+                    if (link === "Projects") {
+                      targetElement = document.getElementById("clients"); // Replace with correct ID
+                    } else if (["Contact Us", "About"].includes(link)) {
+                      targetElement = document.getElementById("footer"); // Replace with correct ID
+                    } else if (link === "Notifications") {
+                      targetElement = document.getElementById("notifications"); // Replace with correct ID
+                    }
+                    
+                    if (targetElement) {
+                      const elementPosition = targetElement.offsetTop; // Top position of the element
+                      const offset = -80; // Adjust offset as needed (e.g., to account for a fixed header)
+                      window.scrollTo({
+                        top: elementPosition + offset,
+                        behavior: "smooth",
+                      });
+                    }
+                  }
+                }}
               >
                 {link}
               </li>
