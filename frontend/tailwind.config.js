@@ -7,8 +7,24 @@ module.exports = {
         colorPulse: 'colorPulse 2s infinite',
         popUp: 'popUp 0.5s ease-out forwards',
         pulsePopUp: 'pulsePopUp 2s ease-out infinite',
+        'slide-up': 'slideUp 0.5s ease-out',
+        rolloutTop: 'rolloutTop 0.8s ease-in-out forwards',
       },
       keyframes: {
+        rolloutTop: {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '100%': { transform: 'translateY(-100%)', opacity: '0' },
+        },
+        slideUp: {
+          '0%': {
+            transform: 'translateY(50px)',
+            opacity: '0',
+          },
+          '100%': {
+            transform: 'translateY(0)',
+            opacity: '1',
+          },
+        },
         colorPulse: {
           '0%': { color: '#4C6E91' },
           '50%': { color: '#F4A300' },

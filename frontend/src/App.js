@@ -4,12 +4,14 @@ import HomePage from './Pages/home-page';
 import SigninScreen from './Pages/Auth/loginpage';
 import SignupScreen from './Pages/Auth/signuppage';
 import Services from './Pages/services';
+import ScrollToTop from './Components/scrolling';
 import "react-toastify/dist/ReactToastify.css";
 
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
        <Route path="/" element={<Navigate to="/home" />} />
         <Route path='/home' element={<HomePage />} />
