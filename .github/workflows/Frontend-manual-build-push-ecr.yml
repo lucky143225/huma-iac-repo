@@ -1,0 +1,50 @@
+name: Frontend-Manual-Build-Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        default: 'main'
+
+jobs:
+  frontend-build-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Generate .env file from secrets
+      run: |
+        cat > frontend/.env <<EOL
+        REACT_APP_BACKEND_PORT=${{ secrets.REACT_APP_BACKEND_PORT }}
+        EOL
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build Docker image with build ID
+      env:
+        BUILD_ID: ${{ github.run_id }}
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        cd frontend
+        docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/real-estate-frontend:${{ env.BUILD_ID }} .
+
+    - name: Push Docker image to AWS ECR with build ID
+      env:
+        BUILD_ID: ${{ github.run_id }}
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/real-estate-frontend:${{ env.BUILD_ID }}

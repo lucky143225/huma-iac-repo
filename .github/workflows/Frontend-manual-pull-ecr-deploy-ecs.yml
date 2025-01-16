@@ -1,0 +1,39 @@
+name: Frontend-Manual-Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        description: 'Build number to deploy'
+        required: true
+
+jobs:
+  frontend-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Update ECS Service with New Image
+      env:
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+        ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.event.inputs.build_id }}"
+
+        # Update ECS service to use the new image
+        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} \
+        --force-new-deployment --region ${{ env.AWS_REGION }} --output json
+
+        echo "ECS service updated with image: $IMAGE_URI"
