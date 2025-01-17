@@ -26,6 +26,10 @@ const fileMetadataSchema = new mongoose.Schema({
     type: String, // S3 URL
     required: true,
   },
+  serviceName:{
+    type: String,
+    required: true,
+  },
   uploadDate: {
     type: Date,
     default: Date.now,

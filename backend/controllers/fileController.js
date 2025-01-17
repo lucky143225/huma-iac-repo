@@ -45,6 +45,12 @@ const uploadFilesInDB = async (req, res) => {
       logger.warn("userId is required");
       return res.status(400).json({ message: "userId is required" });
     }
+    const { serviceName } = req.body; // Extract serviceName from form-data
+
+    if (!serviceName) {
+      logger.warn("Service name is required");
+      return res.status(400).json({ message: "Service name is required" });
+    }
 
     // Check if files are provided in the request
     if (!req.files || req.files.length === 0) {
@@ -63,6 +69,7 @@ const uploadFilesInDB = async (req, res) => {
           fileLocation: file.location, // S3 file URL
           userId, // Attach userId to each file record
           fileSize: file.size, // Attach file size to each file record
+          serviceName
         }
       )
     );
@@ -90,7 +97,6 @@ const uploadFilesInDB = async (req, res) => {
 const getFilesByUser = async (req, res) => {
   try {
     const { userId } = req.user;
-    console.log(req.user, "user details in files");
 
     if (!userId) {
       return res.status(400).json({ message: "userId is required" });
@@ -142,7 +148,6 @@ const updateFileMetadata = async (req, res) => {
         .status(400)
         .json({ message: "Location is required to update the file" });
     }
-
     const file = await FileMetadata.findOneAndUpdate(
       { key: fileKey },
       { fileLocation }, // Update the file's location
