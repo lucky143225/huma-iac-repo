@@ -1,20 +1,20 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { morganLogger } = require('./config/logger');
-const userRoutes = require('./routes/userRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const errorHandler = require('./middleware/errorMiddleware');
-const connectDB = require('./config/database'); // Import the MongoDB connection function
-require('dotenv').config();
-const cors = require('cors');
+const express = require("express");
+const bodyParser = require("body-parser");
+const { morganLogger } = require("./config/logger");
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
+const connectDB = require("./config/database"); // Import the MongoDB connection function
+require("dotenv").config();
+const cors = require("cors");
 
 const app = express();
 
 // Configure CORS options
 const corsOptions = {
-  origin: '*', // Allow all origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'],   // Allowed headers
+  origin: "*", // Allow all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   credentials: true, // Allow cookies and authorization headers
 };
 app.use(cors(corsOptions));
@@ -27,12 +27,12 @@ app.use(morganLogger); // HTTP request logging
 connectDB();
 
 // Define routes
-app.use('/api/users', userRoutes);
-app.use('/api/admin', adminRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Root endpoint
-app.get('/', (req, res) => {
-  res.send('Welcome Lakshmi Narayana Reddy!');
+app.get("/", (req, res) => {
+  res.send("Welcome Lakshmi Narayana Reddy!");
 });
 
 // Global error handler

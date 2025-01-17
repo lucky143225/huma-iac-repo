@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { logger } = require("../config/logger"); // Importing the logger
 
 function verifyToken(req, res, next) {
   const authHeader = req.header("Authorization");
@@ -16,13 +17,13 @@ function verifyToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("Token verification failed:", err.message);
+    logger.error("Token verification failed:", err.message);
     res.status(401).json({ message: "Token is not valid" });
   }
 }
 // Admin Role Middleware
 function isAdmin(req, res, next) {
-  console.log("isAdmin", req.user);
+  logger.log("isAdmin", req.user);
   if (!req.user || req.user.role !== "admin") {
     return res.status(403).send("Access Denied: Admins only");
   }

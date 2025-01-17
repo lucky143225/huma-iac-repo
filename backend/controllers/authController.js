@@ -1,6 +1,6 @@
-const User = require('../models/userModel'); // Assuming Mongoose User model is used
-const bcrypt = require('bcryptjs');
-const {logger} = require("../config/logger"); // Importing the logger
+const User = require("../models/userModel"); // Assuming Mongoose User model is used
+const bcrypt = require("bcryptjs");
+const { logger } = require("../config/logger"); // Importing the logger
 const errorHandler = require("../middleware/errorMiddleware"); // Importing the error handler// Import the logger
 
 // **2. Verify OTP and Register User**
@@ -13,7 +13,7 @@ exports.verifyOTPAndRegister = async (req, res, next) => {
 
     if (!user) {
       logger.warn(`User with phone number ${phoneNumber} not found`);
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check OTP validity
@@ -31,14 +31,20 @@ exports.verifyOTPAndRegister = async (req, res, next) => {
 
       await user.save();
 
-      logger.info(`User registered successfully with phone number: ${phoneNumber}`);
-      return res.status(200).json({ message: 'User registered successfully.' });
+      logger.info(
+        `User registered successfully with phone number: ${phoneNumber}`
+      );
+      return res.status(200).json({ message: "User registered successfully." });
     } else {
-      logger.warn(`Invalid OTP or OTP expired for phone number: ${phoneNumber}`);
-      return res.status(400).json({ message: 'Invalid OTP or OTP expired.' });
+      logger.warn(
+        `Invalid OTP or OTP expired for phone number: ${phoneNumber}`
+      );
+      return res.status(400).json({ message: "Invalid OTP or OTP expired." });
     }
   } catch (err) {
-    logger.error(`Error verifying OTP for phone number: ${phoneNumber} - ${err.message}`);
+    logger.error(
+      `Error verifying OTP for phone number: ${phoneNumber} - ${err.message}`
+    );
     return next(err); // Pass error to the error handler
   }
 };

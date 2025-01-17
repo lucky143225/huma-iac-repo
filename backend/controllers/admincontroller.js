@@ -2,7 +2,7 @@ const User = require("../models/userModel");
 const { hashPassword } = require("../utils/hashPassword");
 const { generateToken } = require("../utils/generateToken");
 const bcrypt = require("bcryptjs");
-const {logger} = require("../config/logger"); // Importing the logger
+const { logger } = require("../config/logger"); // Importing the logger
 const errorHandler = require("../middleware/errorMiddleware"); // Importing the error handler
 
 // Admin Registration
@@ -27,7 +27,7 @@ async function register(req, res, next) {
     });
 
     await user.save();
-    const token = generateToken(user);
+    const token = generateToken({ userID: user.id, userRole: user.role });
 
     logger.info(`Admin registered with email: ${email}`);
     res.status(201).json({ user, token });
@@ -52,7 +52,9 @@ async function login(req, res, next) {
     } else if (phoneNumber) {
       user = await User.findOne({ phoneNumber });
       if (!user) {
-        logger.warn(`Login failed: User with phone number ${phoneNumber} not found`);
+        logger.warn(
+          `Login failed: User with phone number ${phoneNumber} not found`
+        );
         return res.status(400).json({ message: "User not found" });
       }
     }
@@ -63,7 +65,7 @@ async function login(req, res, next) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = await generateToken(user);
+    const token = generateToken({ userID: user.id, userRole: user.role });
 
     logger.info(`User logged in: ${user.email}`);
     res.status(200).json({ user, token });

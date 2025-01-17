@@ -6,6 +6,7 @@ const { generateToken } = require("../utils/generateToken");
 const { isVerified } = require("../utils/generateEmailOtp");
 const { logger } = require("../config/logger"); // Importing the logger
 const errorHandler = require("../middleware/errorMiddleware"); // Importing the error handler
+// const FileMetadata = require("../models/fileUploadModels");
 
 // User Registration
 async function register(req, res) {
@@ -161,7 +162,7 @@ async function login(req, res) {
     }
 
     // Generate and send token
-    const token = generateToken(user.id);
+    const token = generateToken({ userID: user.id, userRole: user.role });
     logger.info(`User logged in successfully: ${email || phoneNumber}`);
     res.status(200).json({ user, token });
   } catch (error) {
@@ -171,7 +172,8 @@ async function login(req, res) {
 }
 // Update User
 async function updateUser(req, res) {
-  const { userId } = req.query;
+  const { userId } = req.user;
+  // console.log(userId,"datatatatata");
   const { firstName, lastName, email, phoneNumber } = req.body;
 
   if (!userId) {
@@ -232,7 +234,8 @@ async function updateUser(req, res) {
 
 // Delete User
 async function deleteUser(req, res) {
-  const { userId } = req.query;
+  console.log(req.user, "user data from token ");
+  const { userId } = req.user;
 
   if (!userId) {
     logger.warn("userId is required");
@@ -255,6 +258,34 @@ async function deleteUser(req, res) {
   }
 }
 
+// get User Data
+async function getUser(req, res) {
+  const { userId } = req.user;
+
+  if (!userId) {
+    logger.warn("userId is required");
+    return res.status(400).json({ message: "userId is required" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      logger.warn(`User with ID ${userId} not found`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    logger.info(`User data retrieved successfully for ID ${userId}`);
+    res.status(200).json({ user });
+  } catch (error) {
+    logger.error(
+      `Failed to retrieve user data for user with ID ${userId}: ${error.message}`
+    );
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve user data", error: error.message });
+  }
+}
+
 module.exports = {
   register,
   verifyOTPAndRegister,
@@ -262,4 +293,5 @@ module.exports = {
   updateUser,
   deleteUser,
   verifyEmailOtpAndRegister,
+  getUser,
 };
