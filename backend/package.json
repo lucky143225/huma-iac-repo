@@ -13,6 +13,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -20,6 +22,8 @@
     "express": "^4.21.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.12.0",
+    "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.9",
@@ -27,8 +31,6 @@
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7",
     "twilio": "^5.4.0",
-    "winston": "^3.17.0",
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0"
+    "winston": "^3.17.0"
   }
 }

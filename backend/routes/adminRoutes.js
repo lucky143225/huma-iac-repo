@@ -8,8 +8,8 @@ const router = express.Router();
 
 router.post('/register',validate(registerUserSchema), register);
 router.post('/login', validate(loginUserSchema),login);
-router.put('/update', isAdmin,verifyToken, validate(updateUserSchema),updateUser);
-router.delete('/delete',isAdmin, verifyToken, deleteUser);
+router.put('/update', verifyToken,isAdmin, validate(updateUserSchema),updateUser);
+router.delete('/delete', verifyToken, isAdmin, deleteUser);
 router.get('/all-users', verifyToken, isAdmin,  getAllUsers);
 
 module.exports = router;
