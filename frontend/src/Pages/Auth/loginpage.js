@@ -37,7 +37,7 @@ export default function SigninScreen() {
         className="absolute inset-0 bg-cover bg-center filter blur-md"
         style={{ backgroundImage: `url(${bgimageicon})` }}
       ></div>
-      <div className="max-w-md w-full mx-auto p-6  rounded-md shadow-md h-[50vh] relative z-10">
+      <div className="max-w-md w-full mx-auto p-6  rounded-2xl shadow-slate-900 shadow-2xl h-[50vh] relative z-10">
         <h1 className="text-2xl font-bold text-center mb-6 text-black">Login</h1>
         <form className="space-y-4">
           <div>
