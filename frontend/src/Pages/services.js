@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import { toast } from "react-toastify";
+import FormData from 'form-data';
 import Building from '../Pictures/Building.avif';
 import Land from "../Pictures/Land.webp";
 import Architecture from "../Pictures/Architecture.avif"
@@ -230,12 +233,75 @@ const Services = () => {
     const [selectedService, setSelectedService] = useState(null);
     const [animationState, setAnimationState] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState("");
+    const [file, setFile] = useState(null);
+    const [allfiles, setAllFiles] = useState(null);
+    const [simplifiedFiles, setsimplifiedFiles] = useState(null);
+    const [matchingFiles, setMatchingFiles] = useState(null);
+    const [showPopup, setShowPopup] = useState(false);
+    const port = process.env.REACT_APP_BACKEND_PORT || "localhost:3000";
 
     const serviceDetailsRef = useRef(null);
 
     const [navbarHeight, setNavbarHeight] = useState(0);
     const navbarRef = useRef(null);
     const navigate = useNavigate()
+
+
+    const handleViewFile = () => {
+        setShowPopup(true); // Show the popup when the user clicks on the "View File" button
+    };
+
+    const handleClosePopup = () => {
+        setShowPopup(false); // Close the popup
+    };
+    useEffect(() => {
+        const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
+
+        if (token) {
+            // Check if data is cached in localStorage
+            const cachedFiles = localStorage.getItem("allFiles");
+            let filessimplify;
+
+            if (cachedFiles) {
+                filessimplify = JSON.parse(cachedFiles)
+                // If cached data exists, set it directly
+                setAllFiles(JSON.parse(cachedFiles));
+            } else {
+                // If no cached data, fetch from the backend
+                async function fetchData() {
+                    try {
+                        const { data } = await axios.get(`http://${port}/api/users/getAllUsersFiles`, {
+                            headers: {
+                                Authorization: token
+                            }
+                        });
+
+                        // Store the fetched data in localStorage for future use
+                        localStorage.setItem("allFiles", JSON.stringify(data.files));
+                        filessimplify = data.files
+                        // Set the fetched data to the state
+                        setAllFiles(data.files);
+                    } catch (err) {
+                        console.error(err?.response?.data?.message || "Something went wrong");
+                    }
+                }
+
+                fetchData();
+            }
+
+            console.log(filessimplify);
+
+
+            const simplifiedFiles = filessimplify?.map(file => ({
+                serviceName: file.serviceName,
+                fileLocation: file.fileLocation,
+                fileName: file.fileName
+            }));
+
+            setsimplifiedFiles(simplifiedFiles)
+        }
+    }, []);
+
 
     // Update navbar height after the component is mounted
     useEffect(() => {
@@ -288,22 +354,41 @@ const Services = () => {
 
     const handleFileClick = (e) => {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-        console.log(userInfo,"userInfo");
-        if(!userInfo){
+        console.log(userInfo, "userInfo");
+        if (!userInfo) {
             e.preventDefault();
             navigate('/login');
         }
     }
     const handleFileUpload = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                setUploadedFileName(file.name);
-                console.log('File selected:', file.name);
-                // Add file handling logic here
-            }
+        const file = e.target.files[0];
+        if (file) {
+            setUploadedFileName(file.name);
+            setFile(file)
+            console.log('File selected:', file.name);
+            // Add file handling logic here
+        }
     };
 
-    const handleUpload = () => {
+    const handleUpload = async () => {
+
+        const form = new FormData();
+        form.append('files', file); // Append the file to the form
+        form.append('serviceName', selectedService.title); // Append the service name
+        const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
+
+        try {
+            const { data } = await axios.post(`http://${port}/api/users/uploadFiles`, form, {
+                headers: {
+                    Authorization: token
+                }
+            });
+            localStorage.removeItem('allFiles')
+            toast.success("File Uploaded Successfully")
+            // navigate('/');
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Something wrong Happened");
+        }
         console.log('Upload button clicked');
         // Add your upload logic here
     };
@@ -317,78 +402,134 @@ const Services = () => {
                 top: 0
             });
         }
+        const matchingFiles = simplifiedFiles?.find(
+            (file) => file.serviceName === selectedService?.title
+        );
+        setMatchingFiles(matchingFiles)
     }, [selectedService]); // This will trigger whenever selectedService changes
+
+    const isPDF = (fileName) => fileName?.endsWith('.pdf');
+
+
+
+    console.log(simplifiedFiles, matchingFiles);
 
 
     return (
         <div className="overflow-x-hidden">
-          <div ref={navbarRef} className="w-full bg-blue/70 backdrop-blur-md z-10 sticky top-0">
-            <Navbar />
-          </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mt-4">Our Services</h2>
-          <div className="p-4 sm:p-6">
-            {selectedService && (
-              <div ref={serviceDetailsRef}>
-                <div className="flex flex-col md:flex-row justify-evenly shadow-2xl w-full min-h-[50vh] items-center mb-8 bg-gradient-to-r from-cyan-50 to-cyan-200 rounded-lg p-4 sm:p-6">
-                  <div className="flex flex-col items-center max-w-full text-center space-y-4">
-                    <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-white shadow-lg">
-                      <img src={selectedService.image} alt="Service" className="w-full h-full object-cover" />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">{selectedService.title}</h2>
-                  </div>
-                  <div className="flex flex-col space-y-6">
-                    <p className="text-sm sm:text-base lg:text-lg text-gray-700">{selectedService.description}</p>
-                    <ul className="mt-4 space-y-2">
-                      {selectedService.keyPoints?.map((point, idx) => (
-                        <li key={idx} className="flex items-start space-x-2">
-                          <span className="text-green-500 text-xl">✔</span>
-                          <span className="text-gray-600">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex flex-row space-x-4 items-center">
-                      <label className="px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-700 flex items-center">
-                        <input
-                          type="file"
-                          className="hidden"
-                          onClick={(e) => handleFileClick(e)}
-                          onChange={(e) => handleFileUpload(e)}
-                        />
-                        {uploadedFileName || "Upload File"}
-                      </label>
-                      <button
-                        className="px-4 sm:px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
-                        onClick={handleUpload}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {services.map((service, index) => (
-                <div
-                  key={index}
-                  className="service-card bg-gradient-to-b from-sky-100 to-cyan-200 rounded-xl shadow-lg p-4 sm:p-6 transition-all duration-300 ease-in-out transform opacity-0 translate-y-10 hover:scale-105 hover:shadow-xl cursor-pointer"
-                  onClick={() => handleServiceClick(service)}
-                >
-                  <div className="flex flex-col items-center mb-2">
-                    <div className="relative group flex flex-col items-center">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-white shadow-lg">
-                        <img src={service.image} alt="Service" className="w-full h-full object-cover" />
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{service.title}</h3>
-                  <p className="text-gray-600">{service.description}</p>
-                </div>
-              ))}
+            <div ref={navbarRef} className="w-full bg-blue/70 backdrop-blur-md z-10 sticky top-0">
+                <Navbar />
             </div>
-          </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mt-4">Our Services</h2>
+            <div className="p-4 sm:p-6">
+                {selectedService && (
+                    <div ref={serviceDetailsRef}>
+                        <div className="flex flex-col md:flex-row justify-evenly shadow-2xl w-full min-h-[50vh] items-center mb-8 bg-gradient-to-r from-cyan-50 to-cyan-200 rounded-lg p-4 sm:p-6">
+                            <div className="flex flex-col items-center max-w-full text-center space-y-4">
+                                <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full overflow-hidden bg-white shadow-lg">
+                                    <img src={selectedService.image} alt="Service" className="w-full h-full object-cover" />
+                                </div>
+                                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">{selectedService.title}</h2>
+                            </div>
+                            <div className="flex flex-col space-y-6">
+                                <p className="text-sm sm:text-base lg:text-lg text-gray-700">{selectedService.description}</p>
+                                <ul className="mt-4 space-y-2">
+                                    {selectedService.keyPoints?.map((point, idx) => (
+                                        <li key={idx} className="flex items-start space-x-2">
+                                            <span className="text-green-500 text-xl">✔</span>
+                                            <span className="text-gray-600">{point}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex flex-row items-center">
+                                    {!matchingFiles
+                                        &&
+                                        <div className=' flex flex-row space-x-4'>
+                                            <label className="px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-700 flex items-center">
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    onClick={(e) => handleFileClick(e)}
+                                                    onChange={(e) => handleFileUpload(e)}
+                                                />
+                                                {uploadedFileName || "Upload File"}
+                                            </label>
+                                            <button
+                                                className="px-4 sm:px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700"
+                                                onClick={handleUpload}
+                                            >
+                                                Submit
+                                            </button></div>
+                                    }
+                                    {/* View File button */}
+                                    {matchingFiles && (
+                                        <div className="mt-4">
+
+                                            <button
+                                                className="px-4 sm:px-6 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-700 flex items-center"
+                                                onClick={handleViewFile} // Trigger the popup when clicked
+                                            >
+                                                {matchingFiles.fileName}
+                                            </button>
+                                        </div>
+                                    )}
+                                    {/* Popup Modal */}
+                                    {showPopup && (
+                                        <div className="fixed inset-0 w-full flex justify-center items-center bg-black bg-opacity-80 z-50">
+                                            <div className="bg-white p-4 rounded-lg w-3/4">
+                                                <button
+                                                    onClick={handleClosePopup}
+                                                    className="absolute w-20 h-20 top-2 right-2 font-bold text-3xl text-black"
+                                                >
+                                                    &times; {/* Close button */}
+                                                </button>
+                                                {/* Render Image or PDF depending on file type */}
+                                                {isPDF(matchingFiles.fileName) ? (
+                                                    <embed
+                                                        src={matchingFiles.fileLocation}
+                                                        type="application/pdf"
+                                                        width="100%"
+                                                        height="500px"
+                                                        alt="PDF File"
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={matchingFiles.fileLocation}
+                                                        alt={matchingFiles.fileName}
+                                                        className="w-full h-auto mt-2"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {services.map((service, index) => (
+                        <div
+                            key={index}
+                            className="service-card bg-gradient-to-b from-sky-100 to-cyan-200 rounded-xl shadow-lg p-4 sm:p-6 transition-all duration-300 ease-in-out transform opacity-0 translate-y-10 hover:scale-105 hover:shadow-xl cursor-pointer"
+                            onClick={() => handleServiceClick(service)}
+                        >
+                            <div className="flex flex-col items-center mb-2">
+                                <div className="relative group flex flex-col items-center">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden bg-white shadow-lg">
+                                        <img src={service.image} alt="Service" className="w-full h-full object-cover" />
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{service.title}</h3>
+                            <p className="text-gray-600">{service.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
-      );
+    );
 }
 
 export default Services;

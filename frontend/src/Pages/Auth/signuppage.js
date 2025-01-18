@@ -38,7 +38,7 @@ export default function SignupScreen() {
         toast.success("Email Verified")
       }
      }catch (err){
-      toast.error(err?.message);
+      toast.error(err?.response?.data?.message || "Something wrong Happened");
       console.error('email verification error', err)
      }
   }
@@ -59,15 +59,22 @@ export default function SignupScreen() {
     }
   };
 
+  const EmailHandler = (e) => {
+
+
+    setEmail(e.target.value)
+    setIsEmailVerified(false)
+  }
+
 
   const EmailOtpGenerator = async(email) => {
      try {
       const emailOTP = await axios.post(`http://${port}/api/users/send-email-otp`,{
         email
       })
-      toast.success("Email Sent Succesfully")
+      toast.success("OTP Sent to Email Succesfully")
      }catch (err){
-      toast.error(err?.message);
+      toast.error(err?.response?.data?.message || "Something wrong Happened");
       console.error('email verification error', err)
      }
   }
@@ -97,7 +104,7 @@ export default function SignupScreen() {
       
       navigate('/home');
     } catch (err) {
-      toast.error(err?.message);
+      toast.error(err?.response?.data?.message || "Something wrong Happened");
       console.error('API Error:', err);
     }
 
@@ -220,7 +227,7 @@ export default function SignupScreen() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => EmailHandler(e)}
 
               className="w-full px-1 mr-2 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
@@ -236,7 +243,7 @@ export default function SignupScreen() {
                     setEmailGeneratedOtp(true);
                   }}
                 >
-                  Verify
+                  {emailgeneratedOtp ? "Re-verify" :"verify" }
                 </button>
               )}
               </div>
