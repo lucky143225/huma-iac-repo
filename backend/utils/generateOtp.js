@@ -13,7 +13,6 @@ const client = new twilio(
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 
 // **1. Send OTP**
-console.log("Generating OTP", generateOTP);
 async function sendOTP(req, res) {
   const { phoneNumber } = req.body;
 

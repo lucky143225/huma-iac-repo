@@ -1,18 +1,23 @@
-const { urlencoded } = require("body-parser");
 const User = require("../models/userModel");
 const { hashPassword } = require("../utils/hashPassword");
 const { generateToken } = require("../utils/generateToken");
 const bcrypt = require("bcryptjs");
+const { logger } = require("../config/logger"); // Importing the logger
+const errorHandler = require("../middleware/errorMiddleware"); // Importing the error handler
+
 // Admin Registration
-async function register(req, res) {
+async function register(req, res, next) {
   try {
     const { firstName, lastName, email, phoneNumber, password } = req.body;
-    const userExists = await User.findOne({ where: { email } });
-    if (userExists)
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      logger.error(`User with email ${email} already exists`);
       return res.status(400).json({ message: "User already exists" });
+    }
+
     const hashedPassword = await hashPassword(password);
 
-    const user = await User.create({
+    const user = new User({
       firstName,
       lastName,
       email,
@@ -20,43 +25,72 @@ async function register(req, res) {
       phoneNumber,
       role: "admin", // Admin role is hardcoded for simplicity
     });
-    const token = generateToken(user);
 
+    await user.save();
+    const token = generateToken({ userID: user.id, userRole: user.role });
+
+    logger.info(`Admin registered with email: ${email}`);
     res.status(201).json({ user, token });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Registration failed", error: error.message });
+    logger.error(`Registration failed: ${error.message}`);
+    next(error); // Pass the error to the error handler
   }
 }
-async function login(req, res) {
+
+// Admin Login
+async function login(req, res, next) {
   const { email, password, phoneNumber } = req.body;
   let user;
-  if (req.body.email) {
-    user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ message: "User not found" });
-  }
-  if (req.body.phoneNumber) {
-    user = await User.findOne({ where: { phoneNumber } });
-    if (!user) return res.status(400).json({ message: "User not found" });
-  }
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-  const token = await generateToken(user);
 
-  res.status(200).json({ user, token });
+  try {
+    if (email) {
+      user = await User.findOne({ email });
+      if (!user) {
+        logger.warn(`Login failed: User with email ${email} not found`);
+        return res.status(400).json({ message: "User not found" });
+      }
+    } else if (phoneNumber) {
+      user = await User.findOne({ phoneNumber });
+      if (!user) {
+        logger.warn(
+          `Login failed: User with phone number ${phoneNumber} not found`
+        );
+        return res.status(400).json({ message: "User not found" });
+      }
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      logger.warn(`Login failed: Invalid credentials for user ${user.email}`);
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = generateToken({ userID: user.id, userRole: user.role });
+
+    logger.info(`User logged in: ${user.email}`);
+    res.status(200).json({ user, token });
+  } catch (error) {
+    logger.error(`Login failed: ${error.message}`);
+    next(error); // Pass the error to the error handler
+  }
 }
+
 // Admin can update user
-async function updateUser(req, res) {
-  const { userId } = req.query;
+async function updateUser(req, res, next) {
+  const { userId } = req.query; // Use query for better REST practices
   if (!userId) {
+    logger.warn("User ID is required to update user");
     return res.status(400).json({ message: "userId is required" });
   }
+
   const { firstName, lastName, email, phoneNumber } = req.body;
 
   try {
-    const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const user = await User.findById(userId);
+    if (!user) {
+      logger.warn(`User with ID ${userId} not found`);
+      return res.status(404).json({ message: "User not found" });
+    }
 
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
@@ -64,38 +98,49 @@ async function updateUser(req, res) {
     user.phoneNumber = phoneNumber || user.phoneNumber;
 
     await user.save();
+
+    logger.info(`User updated successfully: ${userId}`);
     res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
-    res.status(500).json({ message: "Update failed", error: error.message });
+    logger.error(`Update failed: ${error.message}`);
+    next(error); // Pass the error to the error handler
   }
 }
 
 // Admin can delete user
-async function deleteUser(req, res) {
-  const { userId } = req.query;
+async function deleteUser(req, res, next) {
+  const { userId } = req.query; // Use query for better REST practices
   if (!userId) {
+    logger.warn("User ID is required to delete user");
     return res.status(400).json({ message: "userId is required" });
   }
-  try {
-    const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
 
-    await user.destroy();
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      logger.warn(`User with ID ${userId} not found`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.deleteOne();
+
+    logger.info(`User deleted successfully: ${userId}`);
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Delete failed", error: error.message });
+    logger.error(`Delete failed: ${error.message}`);
+    next(error); // Pass the error to the error handler
   }
 }
 
 // Admin can get all users
-async function getAllUsers(req, res) {
+async function getAllUsers(req, res, next) {
   try {
-    const users = await User.findAll({ where: { role: "user" } });
+    const users = await User.find({ role: "user" });
+    logger.info("Fetched all users successfully");
     res.status(200).json({ users });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Fetching users failed", error: error.message });
+    logger.error(`Fetching users failed: ${error.message}`);
+    next(error); // Pass the error to the error handler
   }
 }
 
