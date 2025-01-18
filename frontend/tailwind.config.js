@@ -27,7 +27,7 @@ module.exports = {
         },
         colorPulse: {
           '0%': { color: '#4C6E91' },
-          '50%': { color: '#F4A300' },
+          '50%': { color: '#4C6E91' },
           '100%': { color: '#4C6E91' },
         },
         popUp: {
@@ -48,7 +48,7 @@ module.exports = {
           '0%': {
             transform: 'scale(0.5) translateY(0)', // Start small and at normal position
             opacity: '0',
-            color: '#4C6E91', // Initial color
+            color: '#000000', // Initial color
           },
           '50%': {
             transform: 'scale(1.2) translateY(-0.5rem)', // Pop up and grow
@@ -58,7 +58,7 @@ module.exports = {
           '100%': {
             transform: 'scale(1) translateY(0)', // End at normal size and position
             opacity: '1',
-            color: '#4C6E91', // Revert to initial color
+            color: '#000000', // Revert to initial color
           },
         },
       },

@@ -93,7 +93,7 @@ export default function SignupScreen() {
       });
       console.log('API Response:', data);
       toast.success("Registered Successfully")
-      localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastname, email: data.user.email }));
+      localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastName, email: data.user.email }));
       
       navigate('/home');
     } catch (err) {
@@ -114,7 +114,7 @@ export default function SignupScreen() {
         style={{ backgroundImage: `url(${bgimageicon})` }}
       ></div>
 
-      <div className="max-w-md w-full rounded-md p-8 shadow-md" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="max-w-md w-full rounded-md p-8 shadow-2xl shadow-black" style={{ position: 'relative', zIndex: 10 }}>
         <h1 className="text-2xl font-bold text-center text-black mb-6">Sign Up</h1>
         <div className="space-y-6">
           <div className="flex flex-row">
@@ -163,7 +163,7 @@ export default function SignupScreen() {
                 required
                 className="w-full px-1 mr-2 py-2  border border-gray-600 rounded-md text-black placeholder-gray-500 outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
-              {!isVerified && (
+              {/* {!isVerified && (
                 <button
                   disabled={phoneNumber?.length > 9 ? false : true}
                   className={`w-4/12 py-2 rounded-lg  hover:bg-green-200 ${phoneNumber?.length < 10 || !phoneNumber
@@ -176,7 +176,7 @@ export default function SignupScreen() {
                 >
                   Verify
                 </button>
-              )}
+              )} */}
 
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function SignupScreen() {
           <div>
           <div className="flex flex-row items-center ">
             <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
-              Email (optional)
+              Email
             </label>
             {isEmailVerified && (
                 <img src={verfiyicon} className="ml-2 w-[35px] h-[25px] text-sm font-medium text-green-500 px-1 rounded-lg" />
