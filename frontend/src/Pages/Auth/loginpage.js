@@ -26,7 +26,7 @@ export default function SigninScreen() {
       localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastName, email: data.user.email, token: data.token }));
       navigate('/');
     } catch (err) {
-      toast.error(err?.message);
+      toast.error(err?.response?.data?.message );
     }
   };
 

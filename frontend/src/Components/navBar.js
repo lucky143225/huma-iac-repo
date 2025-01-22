@@ -140,8 +140,8 @@ function Navbar() {
           <div className="flex flex-col p-4  ">
             <button
               onClick={() => {
-                // navigate('/myaccount'); // Navigate to My Account
-                // setSidebarOpen(false);
+                navigate('/my-account'); // Navigate to My Account
+                setSidebarOpen(false);
               }}
               className="py-2 px-4 text-lg font-semibold text-white  rounded mt-10 mb-4"
             >
