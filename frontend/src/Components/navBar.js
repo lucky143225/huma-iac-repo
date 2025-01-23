@@ -140,12 +140,21 @@ function Navbar() {
           <div className="flex flex-col p-4  ">
             <button
               onClick={() => {
-                // navigate('/myaccount'); // Navigate to My Account
-                // setSidebarOpen(false);
+                navigate('/my-account'); // Navigate to My Account
+                setSidebarOpen(false);
               }}
               className="py-2 px-4 text-lg font-semibold text-white  rounded mt-10 mb-4"
             >
               My Account
+            </button>
+            <button
+              onClick={() => {
+                navigate('/dashboard'); // Navigate to My Account
+                setSidebarOpen(false);
+              }}
+              className="py-2 px-4 text-lg font-semibold text-white  rounded mt-10 mb-4"
+            >
+              Dashboard
             </button>
             <ul className="lg:hidden flex flex-col items-center justify-center text-gray-900 font-semibold">
               {["About", "Projects", "Online Services", "Notifications", "Contact Us"].map((link) => (

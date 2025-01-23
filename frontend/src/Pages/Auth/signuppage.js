@@ -91,7 +91,7 @@ export default function SignupScreen() {
     //   return;
     // }
     try {
-      const { data } = await axios.post(`http://${port}/api/users/register`, {
+      const { data } = await axios.post(`http://${port}/api/users/verifyEmailOTPAndRegister`, {
         firstName,
         lastName,
         phoneNumber,
@@ -100,8 +100,7 @@ export default function SignupScreen() {
       });
       console.log('API Response:', data);
       toast.success("Registered Successfully")
-      localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastName, email: data.user.email }));
-      
+      localStorage.setItem('userInfo', JSON.stringify({ firstname: data.user.firstName, lastname: data.user.lastName, email: data.user.email, isVerified: data.user.isVerified, phoneNumber: data.user.phoneNumber }));
       navigate('/home');
     } catch (err) {
       toast.error(err?.response?.data?.message || "Something wrong Happened");
