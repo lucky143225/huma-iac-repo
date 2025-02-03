@@ -5,7 +5,7 @@ const {
   getAllUsers,
   register,
   login,
-} = require("../controllers/adminController");
+} = require("../controllers/admincontroller");
 const validate = require("../middleware/userValidationMiddleware");
 const {
   updateUserSchema,
