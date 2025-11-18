@@ -8,6 +8,8 @@ import ScrollToTop from './Components/scrolling';
 import "react-toastify/dist/ReactToastify.css";
 import MyAccountPage from './Pages/Auth/myAccountPage';
 import DashboardPage from './Pages/Auth/dashboardPage';
+import ContactUsPage from './Components/contactUs';
+import AboutUsPage from './Components/aboutUs';
 
 
 
@@ -23,6 +25,8 @@ function App() {
         <Route path='/services' element={<Services />} />
         <Route path='/my-account' element={<MyAccountPage />} />
         <Route path='/dashboard' element={<DashboardPage />} />
+        <Route path='/contact-us' element={<ContactUsPage />} />
+        <Route path='/about' element={<AboutUsPage />} />
       </Routes>
     
     </BrowserRouter>
