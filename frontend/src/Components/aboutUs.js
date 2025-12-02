@@ -1,190 +1,123 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { 
-  BuildingOfficeIcon,
-  UserGroupIcon,
-  HeartIcon,
-  RocketLaunchIcon,
-  TrophyIcon,
-  ArrowLeftIcon,
-  SparklesIcon
+import {
+  CheckCircleIcon,
+  ArrowRightIcon
 } from "@heroicons/react/24/outline";
+import Navbar from "../Components/navBar";
+import Footer from "../Components/footer";
 
 export default function AboutUsPage() {
   const navigate = useNavigate();
 
-  const stats = [
-    { icon: BuildingOfficeIcon, value: "29+", label: "Years Experience" },
-    { icon: UserGroupIcon, value: "500+", label: "Happy Clients" },
-    { icon: HeartIcon, value: "100%", label: "Satisfaction" }
-  ];
-
-  const values = [
-    { icon: RocketLaunchIcon, title: "Innovation", description: "Cutting-edge solutions for modern challenges" },
-    { icon: HeartIcon, title: "Integrity", description: "Honest and transparent in everything we do" },
-    { icon: UserGroupIcon, title: "Collaboration", description: "Working together to achieve your goals" },
-    { icon: TrophyIcon, title: "Excellence", description: "Delivering quality that exceeds expectations" }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="fixed top-8 left-8 p-2 bg-white rounded-lg shadow-sm hover:shadow transition-all z-50"
-      >
-        <ArrowLeftIcon className="w-5 h-5 text-gray-600" />
-      </button>
+    <div className="min-h-screen bg-white flex flex-col font-sans">
+      <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300/30 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl animate-pulse delay-700" />
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-300/30 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative text-center"
-        >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <SparklesIcon className="w-8 h-8 text-blue-600 animate-pulse" />
-            <h1 className="text-5xl sm:text-6xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-transparent bg-clip-text">
-              About Us
-            </h1>
-            <SparklesIcon className="w-8 h-8 text-purple-600 animate-pulse" />
-          </div>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium">
-            Empowering businesses since 1995
+      {/* 1. Hero Section - CSS Pattern Background */}
+      <div className="relative pt-32 pb-20 px-6 border-b border-gray-100 overflow-hidden">
+        {/* Background Pattern (0kb Data) */}
+        <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        
+        <div className="max-w-4xl mx-auto text-center animate-fade-in">
+          <h1 className="text-4xl sm:text-6xl font-black text-gray-900 tracking-tight mb-6 leading-tight">
+            Engineering Trust. <br />
+            {/* UPDATED: Gradient Text to match Home Page Liaison style */}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
+              Simplifying Approvals.
+            </span>
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto font-medium">
+            Since 1995, MainPillar has been the bridge between property owners and regulatory success in Hyderabad.
           </p>
-        </motion.div>
-      </div>
-
-      <div className="px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="container mx-auto max-w-6xl">
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-3 gap-6 mb-12"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  whileHover={{ y: -8, scale: 1.05 }}
-                  className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 text-center shadow-lg hover:shadow-2xl transition-all border-2 border-blue-100"
-                >
-                  <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-1">{stat.value}</h3>
-                  <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-
-          {/* Story */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl p-8 shadow-lg mb-12 border-2 border-blue-100"
-          >
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text mb-4">
-              Our Story
-            </h2>
-            <div className="text-gray-700 space-y-3 leading-relaxed">
-              <p>
-                Founded in 1995 in Hyderabad, <span className="font-bold text-purple-600">Liaison Consultancy</span> has grown from a small team to serve thousands of clients across India.
-              </p>
-              <p>
-                For 29 years, we've helped businesses navigate digital transformation and achieve their goals through expert guidance and innovative solutions.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Values */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.5 }}
-            className="mb-12"
-          >
-            <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text mb-8">
-              Our Values
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {values.map((value, index) => {
-                const Icon = value.icon;
-                const gradients = [
-                  "from-blue-100 to-cyan-100",
-                  "from-purple-100 to-pink-100",
-                  "from-green-100 to-emerald-100",
-                  "from-orange-100 to-yellow-100"
-                ];
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    whileHover={{ y: -8, scale: 1.05 }}
-                    className={`bg-gradient-to-br ${gradients[index]} rounded-2xl p-6 text-center shadow-lg hover:shadow-2xl transition-all border-2 border-white`}
-                  >
-                    <motion.div
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                      className="w-16 h-16 mx-auto mb-3 bg-white rounded-xl flex items-center justify-center shadow-md"
-                    >
-                      <Icon className="w-8 h-8 text-purple-600" />
-                    </motion.div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">{value.title}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{value.description}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl p-10 text-center shadow-lg border-2 border-blue-200"
-          >
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">
-              Ready to Get Started?
-            </h2>
-            <p className="text-gray-700 mb-6 font-medium">
-              Join thousands of satisfied clients
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/contact-us')}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-2xl transition-all text-lg"
-            >
-              Contact Us →
-            </motion.button>
-          </motion.div>
         </div>
       </div>
+
+      {/* 2. Key Metrics - Clean Row */}
+      <div className="w-full border-b border-gray-100 bg-gray-50/50">
+        <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-3 gap-8 text-center"> {/* Changed to grid-cols-3 since you have 3 items */}
+          {[
+            { label: "Years Active", value: "29+" },
+            { label: "Projects", value: "100+" },
+            { label: "Success Rate", value: "100%" }
+          ].map((stat, i) => (
+            <div key={i} className="flex flex-col items-center justify-center">
+              <div className="text-3xl sm:text-4xl font-black text-gray-900">{stat.value}</div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Core Expertise - Grid Layout */}
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          
+          {/* Left: Text Content */}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Why <span className="text-blue-600">MainPillar?</span>
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                We simplify the complex. Navigating government regulations for land and construction requires precise technical knowledge and legal clarity. We provide both.
+              </p>
+            </div>
+
+            {/* Bullet Points */}
+            <ul className="space-y-4">
+              {[
+                "End-to-End Liasioning (NOCs, Permissions)",
+                "Structural & Architectural Engineering",
+                "Land Revenue Services (Conversion, Surveys)",
+                "Legal Feasibility Reports"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                  <span className="text-gray-800 font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => navigate("/services")}
+              className="group inline-flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors"
+            >
+              Explore Our Services
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
+          {/* Right: Abstract Graphic (CSS Only) */}
+          <div className="relative h-80 bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 shadow-inner">
+             {/* Abstract Shapes */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200 rounded-full blur-3xl opacity-40 translate-x-1/2 -translate-y-1/2"></div>
+             <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-40 -translate-x-1/2 translate-y-1/2"></div>
+             
+             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10">
+                <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-4"></div>
+                <h3 className="text-xl font-bold text-gray-900">One Stop Solution</h3>
+                <p className="text-sm text-gray-500 mt-2 max-w-xs leading-relaxed">
+                  From soil testing to final occupancy certificate, we handle every step of the lifecycle.
+                </p>
+             </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* 4. CTA - Minimal */}
+      <div className="mt-auto bg-white border-t border-gray-100 py-16 px-6 text-center">
+         <h2 className="text-2xl font-bold text-gray-900 mb-2">Have a project in mind?</h2>
+         <p className="text-gray-500 mb-8">Let's discuss feasibility and approvals.</p>
+         <button 
+            onClick={() => navigate("/contact-us")}
+            className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl transition-all transform active:scale-95 shadow-lg hover:shadow-xl"
+         >
+            Start Consultation
+         </button>
+      </div>
+
+      <Footer />
     </div>
   );
 }
