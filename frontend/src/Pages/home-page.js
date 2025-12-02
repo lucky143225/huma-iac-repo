@@ -2,49 +2,37 @@ import Client from "../Components/client";
 import ExperienceBadge from "../Components/ExperienceBadge";
 import Footer from "../Components/footer";
 import HeroSection from "../Components/heroSection";
-import Notifications from "../Components/notifications";
+import BodySection from "../Components/bodySection";
 import { useEffect, memo } from "react";
 import { useLocation } from "react-router-dom";
 
 const MemoizedClient = memo(Client);
-const MemoizedNotifications = memo(Notifications);
+const MemoizedBodySection = memo(BodySection);
 
 function HomePage() {
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => {
+    // ONLY handle the specific section scroll here.
+    // The global ScrollToTop component handles the "else" case.
+    
+    if (location.state && location.state.targetId) {
+      const targetId = location.state.targetId;
+      
+      // Give the page a moment to render fully
       setTimeout(() => {
-        if (location.state?.targetId) {
-          const targetElement = document.getElementById(location.state.targetId);
-          if (targetElement) {
-            const elementPosition = targetElement.offsetTop;
-            const offset = -80;
-            window.scrollTo({
-              top: elementPosition + offset,
-              behavior: "smooth",
-            });
-          }
-        } else {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-
-        const { state, ...locationWithoutState } = location;
-        window.history.replaceState(
-          null,
-          "",
-          locationWithoutState.pathname + locationWithoutState.search
-        );
-      }, 100);
-    };
-
-    handleScroll();
+      }, 100); 
+    }
   }, [location]);
 
   return (
     <div>
       <HeroSection />
-      <MemoizedNotifications />
+      <MemoizedBodySection />
       <MemoizedClient />
       <Footer />
       <ExperienceBadge />

@@ -4,12 +4,12 @@ import HomePage from './Pages/home-page';
 import SigninScreen from './Pages/Auth/loginpage';
 import SignupScreen from './Pages/Auth/signuppage';
 import Services from './Pages/services';
-import ScrollToTop from './Components/scrolling';
 import "react-toastify/dist/ReactToastify.css";
 import MyAccountPage from './Pages/Auth/myAccountPage';
 import DashboardPage from './Pages/Auth/dashboardPage';
 import ContactUsPage from './Components/contactUs';
 import AboutUsPage from './Components/aboutUs';
+import ScrollToTop from './Components/ScrollToTop';
 
 
 
@@ -20,11 +20,11 @@ function App() {
       <Routes>
        <Route path="/" element={<Navigate to="/home" />} />
         <Route path='/home' element={<HomePage />} />
-        <Route path='/login' element={<SigninScreen />}/>
-        <Route path='/signup' element={<SignupScreen />}/>
+        {/* <Route path='/login' element={<SigninScreen />}/>
+        <Route path='/signup' element={<SignupScreen />}/> */}
         <Route path='/services' element={<Services />} />
-        <Route path='/my-account' element={<MyAccountPage />} />
-        <Route path='/dashboard' element={<DashboardPage />} />
+        {/* <Route path='/my-account' element={<MyAccountPage />} />
+        <Route path='/dashboard' element={<DashboardPage />} /> */}
         <Route path='/contact-us' element={<ContactUsPage />} />
         <Route path='/about' element={<AboutUsPage />} />
       </Routes>

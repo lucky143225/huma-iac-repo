@@ -1,12 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   XMarkIcon,
   Bars3Icon,
-  UserCircleIcon,
-  ArrowRightOnRectangleIcon,
-  ChartBarIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 
 function Navbar() {
@@ -14,9 +11,8 @@ function Navbar() {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const firstname = JSON.parse(localStorage.getItem("userInfo"))?.firstname;
-  const lastname = JSON.parse(localStorage.getItem("userInfo"))?.lastname;
 
+  // Handle window resize to determine mobile/desktop layout
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -25,11 +21,12 @@ function Navbar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Smooth scroll handler
   const handleScrollTo = (targetId) => {
     const targetElement = document.getElementById(targetId);
     if (targetElement) {
       const elementPosition = targetElement.offsetTop;
-      const offset = -80;
+      const offset = -80; // Offset for fixed header
       window.scrollTo({
         top: elementPosition + offset,
         behavior: "smooth",
@@ -37,267 +34,176 @@ function Navbar() {
     }
   };
 
+  // Mapping links to section IDs
   const scrollMap = {
-    Projects: "clients",
+    Projects: "industry-leaders",
     About: "footer",
-    Notifications: "notifications",
   };
 
+  // Main Navigation Logic
   const handleNavClick = (link) => {
     const targetId = scrollMap[link];
+
     if (link === "Online Services") {
       navigate("/services");
     } else if (link === "Contact Us") {
       navigate("/contact-us");
     } else if (link === "About") {
       navigate("/about");
-    } else if (location.pathname !== "/home") {
+    } else if (location.pathname !== "/") {
+      // If not on home page, navigate home first with target state
       navigate("/home", { state: { targetId } });
     } else if (targetId) {
+      // If already on home page, just scroll
       handleScrollTo(targetId);
     }
+    
+    // Always close sidebar after clicking a link
     setSidebarOpen(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setSidebarOpen(false);
-    navigate("/login");
   };
 
   const navLinks = [
     "About",
     "Projects",
     "Online Services",
-    "Notifications",
     "Contact Us",
   ];
 
   return (
     <>
-      {/* Main Navbar - Fully Transparent with Black Text */}
+      {/* Main Navbar - Fixed, Translucent */}
       <nav
-        className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md shadow-md"
+        className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md shadow-md transition-all duration-300"
         style={{
           height: "7vh",
           minHeight: "56px",
           background: "rgba(255, 255, 255, 0.1)",
         }}
       >
-        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-full">
-            {/* Logo Section */}
-            <div
-              onClick={() => navigate("/home")}
-              className="cursor-pointer flex-shrink-0"
+        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 relative flex items-center justify-between lg:justify-between">
+          
+          {/* Mobile Left: Home Icon */}
+          <div className="lg:hidden flex-shrink-0 w-10">
+            <button
+              onClick={() => navigate("/")}
+              className="p-2 -ml-2 text-gray-900 hover:bg-gray-100 rounded-lg transition-colors active:scale-95"
+              aria-label="Home"
             >
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight drop-shadow-sm">
-                Liaison Consultancy
-              </h1>
-              <p className="text-[10px] sm:text-xs text-gray-800 font-medium leading-tight">
-                Excellence Since 1995
-              </p>
-            </div>
+              <HomeIcon className="w-6 h-6" />
+            </button>
+          </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-6">
-              <ul className="flex items-center gap-1">
-                {navLinks.map((link) => (
-                  <li key={link}>
-                    <button
-                      onClick={() => handleNavClick(link)}
-                      className="px-3 py-1.5 text-sm font-semibold text-gray-900 rounded-lg transition-all duration-200 relative group hover:bg-gray-900/10 hover:text-gray-700"
-                    >
-                      {link}
-                      <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-3/4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+          {/* Logo Section - Centered on Mobile, Left on Desktop */}
+          <div
+            onClick={() => navigate("/")}
+            className="cursor-pointer absolute left-1/2 transform -translate-x-1/2 lg:static lg:translate-x-0 flex flex-col items-center lg:items-start group"
+          >
+            <h1 className="flex flex-col text-lg sm:text-xl font-bold text-gray-900 leading-tight drop-shadow-sm text-center lg:text-left group-hover:text-blue-600 transition-colors">
+              <span>MainPillar</span>
+            </h1>
+            <p className="hidden sm:block text-[10px] sm:text-xs text-gray-800 font-medium leading-tight text-center lg:text-left">
+              Excellence Since 1995
+            </p>
+          </div>
 
-              {/* Account Button Desktop
-              {firstname ? (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:bg-gray-800 transition-all duration-200"
-                >
-                  <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs text-white">
-                    {firstname[0]}
-                    {lastname[0]}
-                  </div>
-                  <span className="hidden xl:inline text-sm">{firstname}</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate("/login")}
-                  className="px-5 py-1.5 bg-gray-900 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:bg-gray-800 transition-all duration-200 text-sm"
-                >
-                  Login
-                </button>
-              )} */}
-            </div>
+          {/* Desktop Navigation Links */}
+          <div className="hidden lg:flex items-center gap-6">
+            <ul className="flex items-center gap-1">
+              {navLinks.map((link) => (
+                <li key={link}>
+                  <button
+                    onClick={() => handleNavClick(link)}
+                    className="px-4 py-2 text-sm font-semibold text-gray-900 rounded-lg transition-all duration-200 relative group  hover:text-blue-700"
+                  >
+                    {link}
+                    {/* Animated underline effect */}
+                    <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2 rounded-full" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* Mobile Hamburger & Account */}
-            <div className="flex lg:hidden items-center gap-2">
-              {firstname && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center font-bold shadow-md text-sm"
-                >
-                  {firstname[0]}
-                  {lastname[0]}
-                </button>
-              )}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-1.5 text-gray-900 hover:bg-gray-900/10 rounded-lg transition-colors"
-              >
-                <Bars3Icon className="w-6 h-6" />
-              </button>
-            </div>
+          {/* Mobile Right: Menu Button */}
+          <div className="lg:hidden flex items-center justify-end w-10">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1.5 -mr-2 text-gray-900  rounded-lg transition-colors active:scale-95"
+              aria-label="Open Menu"
+            >
+              <Bars3Icon className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Sidebar/Drawer */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            />
+      {/* Sidebar / Mobile Drawer */}
+      {sidebarOpen && (
+        <>
+          {/* Dark Backdrop with Fade Animation */}
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"
+          />
 
-            {/* Sidebar Content */}
-            <motion.div
-              initial={{
-                x: isMobile ? 0 : "100%",
-                y: isMobile ? "100%" : 0,
-              }}
-              animate={{
-                x: 0,
-                y: 0,
-              }}
-              exit={{
-                x: isMobile ? 0 : "100%",
-                y: isMobile ? "100%" : 0,
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className={`fixed ${
-                isMobile
-                  ? "bottom-0 left-0 right-0 rounded-t-3xl h-[85vh]"
-                  : "top-0 right-0 h-full w-80 rounded-l-3xl"
-              } bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white z-50 shadow-2xl overflow-hidden`}
-            >
-              {/* Animated Background Pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-500 rounded-full blur-3xl" />
+          {/* Sidebar Content Panel */}
+          <div
+            className={`fixed ${
+              isMobile
+                ? "bottom-0 left-0 right-0 rounded-t-3xl h-[70vh] animate-slide-up"
+                : "top-0 right-0 h-full w-80 rounded-l-3xl animate-slide-left"
+            } bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white z-50 shadow-2xl overflow-hidden flex flex-col`}
+          >
+            {/* Decorative Background Glows */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-blue-600 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-600 rounded-full blur-3xl" />
+            </div>
+
+            {/* Inner Content */}
+            <div className="relative h-full flex flex-col p-6 z-10">
+              
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                <h2 className="text-2xl font-bold text-white tracking-wide">Menu</h2>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
+                  aria-label="Close Menu"
+                >
+                  <XMarkIcon className="w-6 h-6 text-gray-300" />
+                </button>
               </div>
 
-              <div className="relative h-full flex flex-col p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Menu</h2>
-                  <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <XMarkIcon className="w-6 h-6" />
-                  </button>
-                </div>
-
-                {/* User Section */}
-                {firstname && (
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-6 border border-white/20">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg font-bold shadow-lg text-white">
-                        {firstname[0]}
-                        {lastname[0]}
-                      </div>
-                      <div>
-                        <p className="font-bold text-base text-white">
-                          {firstname} {lastname}
-                        </p>
-                        <p className="text-xs text-gray-300">Welcome back!</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
+              {/* Navigation Links List */}
+              <nav className="flex-1 overflow-y-auto">
+                <ul className="space-y-2">
+                  {navLinks.map((link) => (
+                    <li key={link}>
                       <button
-                        onClick={() => {
-                          navigate("/my-account");
-                          setSidebarOpen(false);
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold transition-colors text-white"
+                        onClick={() => handleNavClick(link)}
+                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 font-semibold group flex items-center justify-between text-gray-100 active:bg-white/20"
                       >
-                        <UserCircleIcon className="w-4 h-4" />
-                        Account
+                        <span className="text-base sm:text-lg">{link}</span>
+                        <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-blue-400">
+                          →
+                        </span>
                       </button>
-                      <button
-                        onClick={() => {
-                          navigate("/dashboard");
-                          setSidebarOpen(false);
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold transition-colors text-white"
-                      >
-                        <ChartBarIcon className="w-4 h-4" />
-                        Dashboard
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 overflow-y-auto">
-                  <ul className="space-y-1">
-                    {navLinks.map((link) => (
-                      <li key={link}>
-                        <button
-                          onClick={() => handleNavClick(link)}
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 font-semibold group flex items-center justify-between text-white"
-                        >
-                          {link}
-                          <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            →
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-
-                {/* Footer Actions */}
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  {!firstname ? (
-                    <button
-                      onClick={() => {
-                        navigate("/login");
-                        setSidebarOpen(false);
-                      }}
-                      className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
-                    >
-                      Login / Sign Up
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl font-bold transition-all text-white"
-                    >
-                      <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                      Logout
-                    </button>
-                  )}
-                </div>
+              {/* Sidebar Footer */}
+              <div className="pt-6 border-t border-white/10 mt-auto">
+                <p className="text-center text-xs text-gray-400 font-medium">
+                  © {new Date().getFullYear()} MainPillar. All rights reserved.
+                </p>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
