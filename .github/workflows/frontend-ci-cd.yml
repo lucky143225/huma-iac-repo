@@ -1,13 +1,13 @@
 name: Frontend CI/CD (build → security → ECR → scripts → deploy)
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci-cd.yml'
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #   paths:
+  #     - 'frontend/**'
+  #     - '.github/workflows/frontend-ci-cd.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -115,15 +115,7 @@ jobs:
           name: frontend-build
           path: frontend/build/
 
-      - name: Configure AWS credentials (role-to-assume if provided)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Configure AWS credentials (access keys fallback)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -157,15 +149,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (role-to-assume if provided)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Configure AWS credentials (access keys fallback)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
