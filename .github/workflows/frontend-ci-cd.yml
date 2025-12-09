@@ -18,6 +18,8 @@ on:
 env:
   AWS_REGION: ap-south-2
   ECR_REPO: mainpillar-frontend
+  LAMBDA_FUNCTION_NAME: mainpillar-frontend-function
+  LAMBDA_ROLE_ARN: ${{ secrets.LAMBDA_ROLE_ARN_FRONTEND || '' }}
 
 concurrency:
   group: frontend-ci-${{ github.ref }}-${{ github.event.inputs.environment || 'auto' }}
