@@ -159,9 +159,8 @@ jobs:
         run: |
           # Use short SHA (7 chars) for image tag
           SHORT_TAG=$(echo "${IMAGE_TAG}" | cut -c1-7)
-          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$SHORT_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$SHORT_TAG .
           docker push $REGISTRY/$REPOSITORY:$SHORT_TAG
-          docker push $REGISTRY/$REPOSITORY:latest
           echo "uri=$REGISTRY/$REPOSITORY:$SHORT_TAG" >> $GITHUB_OUTPUT
 
       - name: Scan Docker image with Trivy
