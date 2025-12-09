@@ -34,7 +34,7 @@ COPY frontend/nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Copy entry point script
-COPY frontend/docker-entrypoint.sh /var/task/entrypoint.sh
+COPY docker-entrypoint.sh /var/task/entrypoint.sh
 RUN chmod +x /var/task/entrypoint.sh
 
 # Expose port 8080 (Lambda uses 8080 by default)
