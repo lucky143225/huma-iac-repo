@@ -157,10 +157,12 @@ jobs:
           REPOSITORY: ${{ env.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          # Use short SHA (7 chars) for image tag
+          SHORT_TAG=$(echo "${IMAGE_TAG}" | cut -c1-7)
+          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$SHORT_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:$SHORT_TAG
           docker push $REGISTRY/$REPOSITORY:latest
-          echo "uri=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "uri=$REGISTRY/$REPOSITORY:$SHORT_TAG" >> $GITHUB_OUTPUT
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -222,7 +224,9 @@ jobs:
         run: |
           # Ensure AWS account id available
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+          # Use short SHA (7 chars) to match pushed image tag
+          SHORT_TAG=$(echo "${IMAGE_TAG}" | cut -c1-7)
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${SHORT_TAG}
           echo "Using image: $IMAGE_URI"
 
           if aws lambda get-function --function-name "$LAMBDA_FUNCTION_NAME" --region ${AWS_REGION} >/dev/null 2>&1; then
