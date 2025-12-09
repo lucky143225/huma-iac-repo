@@ -5,13 +5,13 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copy package files
-COPY frontend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci --legacy-peer-deps && npm cache clean --force
 
 # Copy source code
-COPY frontend . .
+COPY . .
 
 # Build the React app
 RUN npm run build
@@ -28,7 +28,7 @@ WORKDIR /var/task
 RUN mkdir -p /var/run/nginx
 
 # Copy custom nginx config
-COPY frontend/nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy built React app from builder stage
 COPY --from=build /app/build /usr/share/nginx/html
