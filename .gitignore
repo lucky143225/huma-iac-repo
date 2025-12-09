@@ -2,8 +2,6 @@ ec2/.terraform
 ec2/.terraform.lock.hcl
 ec2/terraform.tfstate
 frontend/node_modules
-frontend/package-lock.json
 backend/node_modules
-backend/package-lock.json
 backend/.env
 frontend/.env
