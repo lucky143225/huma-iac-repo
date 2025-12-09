@@ -70,6 +70,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     needs: build
+    environment: Huma-iac-repo
 
     steps:
       - name: Checkout
@@ -90,11 +91,28 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
 
-      - name: Upload Trivy results (optional)
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Trivy results to repo
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
+          name: trivy-filesystem-scan
+          path: trivy-results.sarif
+          retention-days: 30
+
+      - name: Upload filesystem scan to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.SECURITY_SCANS_S3_BUCKET }}
+        run: |
+          if [ -z "$S3_BUCKET" ]; then
+            echo "S3_BUCKET not set, skipping upload"
+            exit 0
+          fi
+          SCAN_DATE=$(date +%Y/%m/%d)
+          SCAN_TIME=$(date +%H-%M-%S)
+          aws s3 cp trivy-results.sarif s3://$S3_BUCKET/security-scans/filesystem/$SCAN_DATE/trivy-filesystem-$SCAN_TIME.sarif --region $AWS_REGION
+          echo "Uploaded to s3://$S3_BUCKET/security-scans/filesystem/$SCAN_DATE/trivy-filesystem-$SCAN_TIME.sarif"
 
       - name: NPM audit (production deps)
         working-directory: frontend
@@ -105,6 +123,7 @@ jobs:
     name: Build & Push Image
     runs-on: ubuntu-latest
     needs: [build, security-scan]
+    environment: Huma-iac-repo
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     outputs:
       image-uri: ${{ steps.image.outputs.uri }}
@@ -151,18 +170,35 @@ jobs:
           output: 'trivy-image-results.sarif'
           severity: 'CRITICAL,HIGH'
 
-      - name: Upload Docker image scan results
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Docker image scan results to repo
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: 'trivy-image-results.sarif'
-          category: 'trivy-image'
-        continue-on-error: true
+          name: trivy-docker-scan
+          path: trivy-image-results.sarif
+          retention-days: 30
+
+      - name: Upload Docker image scan to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.SECURITY_SCANS_S3_BUCKET }}
+        run: |
+          if [ -z "$S3_BUCKET" ]; then
+            echo "S3_BUCKET not set, skipping upload"
+            exit 0
+          fi
+          SCAN_DATE=$(date +%Y/%m/%d)
+          SCAN_TIME=$(date +%H-%M-%S)
+          aws s3 cp trivy-image-results.sarif s3://$S3_BUCKET/security-scans/docker/$SCAN_DATE/trivy-docker-$SCAN_TIME.sarif --region $AWS_REGION
+          echo "Uploaded to s3://$S3_BUCKET/security-scans/docker/$SCAN_DATE/trivy-docker-$SCAN_TIME.sarif"
 
   deploy:
     name: Deploy to Environment
     runs-on: ubuntu-latest
     needs: push-ecr
     if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    environment: Huma-iac-repo
 
     steps:
       - name: Checkout
