@@ -1,0 +1,214 @@
+name: Frontend CI/CD (build → security → ECR → scripts → deploy)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci-cd.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (staging or prod)'
+        required: true
+        default: 'staging'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: mainpillar-frontend
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}-${{ github.event.inputs.environment || 'auto' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    outputs:
+      build-artifact: ${{ steps.upload.outputs.artifact-name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: |
+          npm ci --legacy-peer-deps
+
+      - name: Run tests
+        working-directory: frontend
+        run: |
+          npm test -- --watchAll=false --coverage --passWithNoTests || true
+
+      - name: Build
+        working-directory: frontend
+        run: |
+          npm run build
+
+      - name: Upload build artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          retention-days: 5
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v2
+        with:
+          scan-type: 'fs'
+          scan-ref: 'frontend'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results (optional)
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: NPM audit (production deps)
+        working-directory: frontend
+        run: |
+          npm audit --production || true
+
+  push-ecr:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    needs: [build, security-scan]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      image-uri: ${{ steps.image.outputs.uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+
+      - name: Configure AWS credentials (role-to-assume if provided)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (access keys fallback)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image to ECR
+        id: image
+        working-directory: frontend
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+          echo "uri=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to Environment
+    runs-on: ubuntu-latest
+    needs: push-ecr
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (role-to-assume if provided)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (access keys fallback)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy or update Lambda (image)
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ steps.aws-info.outputs.AWS_ACCOUNT_ID || '' }}
+          ECR_REPO: ${{ env.ECR_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+          LAMBDA_FUNCTION_NAME: ${{ env.LAMBDA_FUNCTION_NAME }}
+          LAMBDA_ROLE_ARN: ${{ env.LAMBDA_ROLE_ARN }}
+        run: |
+          # Ensure AWS account id available
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+          echo "Using image: $IMAGE_URI"
+
+          if aws lambda get-function --function-name "$LAMBDA_FUNCTION_NAME" --region ${AWS_REGION} >/dev/null 2>&1; then
+            echo "Lambda exists — updating image..."
+            aws lambda update-function-code --function-name "$LAMBDA_FUNCTION_NAME" --image-uri "$IMAGE_URI" --region ${AWS_REGION}
+          else
+            echo "Lambda not found — creating function (requires LAMBDA_ROLE_ARN)..."
+            if [ -z "$LAMBDA_ROLE_ARN" ] || [ "$LAMBDA_ROLE_ARN" = "" ]; then
+              echo "ERROR: LAMBDA_ROLE_ARN is not set for this environment. Create the Lambda function manually or add the role secret."
+              exit 1
+            fi
+            aws lambda create-function --function-name "$LAMBDA_FUNCTION_NAME" --package-type Image --code ImageUri=$IMAGE_URI --role "$LAMBDA_ROLE_ARN" --timeout 60 --memory-size 512 --region ${AWS_REGION}
+          fi
+
+      - name: Ensure Function URL exists & print
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          LAMBDA_FUNCTION_NAME: ${{ env.LAMBDA_FUNCTION_NAME }}
+        run: |
+          FN_NAME="$LAMBDA_FUNCTION_NAME"
+          if aws lambda get-function-url-config --function-name "$FN_NAME" --region ${AWS_REGION} >/dev/null 2>&1; then
+            echo "Function URL exists"
+          else
+            echo "Creating function URL (public, CORS enabled)"
+            aws lambda create-function-url-config --function-name "$FN_NAME" --auth-type NONE --cors "{AllowOrigins=[\"*\"],AllowMethods=[\"GET\",\"POST\",\"PUT\",\"DELETE\",\"OPTIONS\"],AllowHeaders=[\"Content-Type\",\"Authorization\"],MaxAge=300}" --region ${AWS_REGION}
+          fi
+
+          aws lambda get-function-url-config --function-name "$FN_NAME" --region ${AWS_REGION} --query FunctionUrl --output text || true
