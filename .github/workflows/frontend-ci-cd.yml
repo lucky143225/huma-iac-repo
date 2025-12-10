@@ -159,7 +159,7 @@ jobs:
         run: |
           # Use short SHA (7 chars) for image tag
           SHORT_TAG=$(echo "${IMAGE_TAG}" | cut -c1-7)
-          docker build -f Dockerfile -t $REGISTRY/$REPOSITORY:$SHORT_TAG .
+          docker build -f Dockerfile -e S3_BUCKET ${{ secrets.S3_BUCKET }}-t $REGISTRY/$REPOSITORY:$SHORT_TAG .
           docker push $REGISTRY/$REPOSITORY:$SHORT_TAG
           echo "uri=$REGISTRY/$REPOSITORY:$SHORT_TAG" >> $GITHUB_OUTPUT
 

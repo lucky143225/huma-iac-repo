@@ -1,5 +1,4 @@
-# Multistage Dockerfile for React Frontend on AWS Lambda
-# Stage 1: Build stage
+# Stage 1: Build the React app
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -7,31 +6,37 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps && npm cache clean --force
+# Install dependencies (use npm install to avoid npm ci lockfile issues)
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
-# Copy source code
+# Copy the rest of the source
 COPY . .
 
-# Build the React app
+# Build the React app (Vite/React – output is usually dist/)
 RUN npm run build
 
-# Stage 2: Production stage - Serve with nginx (alpine)
-FROM nginx:stable-alpine AS runtime
+# Stage 2: Lambda Runtime with nginx + JS
+FROM public.ecr.aws/lambda/nodejs:20
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install nginx on Amazon Linux 2023 (uses dnf, not yum/amazon-linux-extras)
+RUN dnf -y install nginx && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
-WORKDIR /usr/share/nginx/html
+# Create nginx runtime dirs
+RUN mkdir -p /var/run/nginx /var/log/nginx
 
-# Copy built React app from builder stage
-COPY --from=build /app/build .
-
-# Copy custom nginx config (if it exists)
+# Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 8080
+# Copy built React app (NOTE: Vite -> dist/, CRA -> build/)
+# Change to /app/build if you're using CRA instead of Vite.
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy Lambda handler (must export `handler`)
+# Lambda will call index.handler on each invocation
+COPY lambda-handler.js ${LAMBDA_TASK_ROOT}/index.js
 EXPOSE 8080
 
-# Start nginx in foreground
-CMD ["nginx", "-g", "daemon off;"]
+# Set the Lambda handler
+CMD [ "index.handler" ]
