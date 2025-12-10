@@ -37,6 +37,12 @@ async function startNginx() {
     if (!bin) {
       return reject(new Error('nginx binary not found'));
     }
+    // Ensure /tmp/nginx exists and is writable for logs/pid
+    try {
+      fs.mkdirSync('/tmp/nginx', { recursive: true });
+    } catch (e) {
+      console.warn('Could not create /tmp/nginx:', e && e.message);
+    }
 
     console.log(`Starting nginx using binary: ${bin}`);
     nginxProcess = spawn(bin, ['-g', 'daemon off;'], {
