@@ -162,31 +162,46 @@ function waitForPort(port, host = '127.0.0.1', timeoutMs = 3000, interval = 100)
 
 // Lambda handler
 exports.handler = async (event) => {
+  console.log('=== Handler invoked ===');
+  console.log('Event:', JSON.stringify(event, null, 2));
+  
   try {
     // Start nginx on first invocation. If nginx binary is missing or fails to start,
     // fall back to a small Node static server that serves the built files.
     if (!nginxProcess && !nodeServer) {
+      console.log('Initializing server...');
       try {
         await startNginx();
+        console.log('nginx started, waiting for port readiness...');
         // Wait for nginx to accept connections on 127.0.0.1:8080
         const ok = await waitForPort(8080, '127.0.0.1', 3000, 100);
         if (!ok) {
           console.warn('nginx did not become ready within timeout, falling back to Node static server');
           startNodeStaticServer();
+        } else {
+          console.log('nginx port is ready');
         }
       } catch (err) {
         console.warn('nginx failed to start, falling back to Node static server:', err && err.message);
         startNodeStaticServer();
       }
+    } else {
+      console.log('Server already initialized, reusing...');
     }
 
+    console.log('Proxying request...');
     // Proxy the request to nginx on localhost:8080
     return new Promise((resolve, reject) => {
+      const path = event.rawPath || event.path || '/';
+      const method = event.requestContext?.http?.method || event.httpMethod || 'GET';
+      
+      console.log(`Proxying ${method} ${path}`);
+      
       const options = {
         hostname: 'localhost',
         port: 8080,
-        path: event.rawPath || event.path || '/',
-        method: event.requestContext?.http?.method || event.httpMethod || 'GET',
+        path: path,
+        method: method,
         headers: event.headers || {}
       };
 
@@ -201,16 +216,19 @@ exports.handler = async (event) => {
         });
 
         res.on('end', () => {
+          console.log(`Response received: status=${res.statusCode}, body length=${body.length}`);
           // Determine if response is base64 encoded (for binary content)
           const contentType = res.headers['content-type'] || '';
           const isBase64 = /image|font|application\/pdf/.test(contentType);
 
-          resolve({
+          const response = {
             statusCode: res.statusCode,
             headers: res.headers,
             body: isBase64 ? Buffer.from(body).toString('base64') : body,
             isBase64Encoded: isBase64
-          });
+          };
+          console.log('Resolving response:', JSON.stringify(response, null, 2));
+          resolve(response);
         });
       });
 
