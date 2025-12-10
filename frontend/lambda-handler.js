@@ -1,13 +1,45 @@
 const { spawn } = require('child_process');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 let nginxProcess = null;
 
-// Start nginx on Lambda init
+// Try to find an nginx binary at common absolute paths
+function findNginxBinary() {
+  const candidates = [
+    '/usr/sbin/nginx',
+    '/sbin/nginx',
+    '/usr/local/sbin/nginx',
+    '/usr/local/nginx/sbin/nginx',
+    '/bin/nginx',
+    'nginx' // fallback to PATH lookup
+  ];
+
+  for (const p of candidates) {
+    try {
+      if (p === 'nginx') {
+        // let spawn handle PATH lookup later
+        return 'nginx';
+      }
+      if (fs.existsSync(p)) return p;
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null;
+}
+
+// Start nginx on Lambda init (try absolute path first)
 async function startNginx() {
   return new Promise((resolve, reject) => {
-    console.log('Starting nginx...');
-    nginxProcess = spawn('nginx', ['-g', 'daemon off;'], {
+    const bin = findNginxBinary();
+    if (!bin) {
+      return reject(new Error('nginx binary not found'));
+    }
+
+    console.log(`Starting nginx using binary: ${bin}`);
+    nginxProcess = spawn(bin, ['-g', 'daemon off;'], {
       stdio: 'inherit',
       detached: false
     });
@@ -17,20 +49,84 @@ async function startNginx() {
       reject(err);
     });
 
-    // Give nginx time to start (200ms should be enough)
+    // Give nginx time to start (short delay)
     setTimeout(() => {
       console.log('nginx started successfully');
       resolve();
-    }, 200);
+    }, 300);
+  });
+}
+
+// Minimal Node static server fallback (serves files from build output)
+let nodeServer = null;
+function startNodeStaticServer(root = '/usr/share/nginx/html', port = 8080) {
+  if (nodeServer) return;
+  const mime = {
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2'
+  };
+
+  nodeServer = http.createServer((req, res) => {
+    try {
+      let reqPath = decodeURIComponent(new URL(req.url, `http://localhost`).pathname);
+      if (reqPath === '/') reqPath = '/index.html';
+      const fullPath = path.join(root, reqPath);
+
+      if (!fullPath.startsWith(root)) {
+        res.writeHead(403);
+        return res.end('Forbidden');
+      }
+
+      if (!fs.existsSync(fullPath) || fs.statSync(fullPath).isDirectory()) {
+        // SPA fallback to index.html
+        const indexPath = path.join(root, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          fs.createReadStream(indexPath).pipe(res);
+          return;
+        }
+        res.writeHead(404);
+        return res.end('Not Found');
+      }
+
+      const ext = path.extname(fullPath).toLowerCase();
+      const ct = mime[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': ct });
+      fs.createReadStream(fullPath).pipe(res);
+    } catch (err) {
+      console.error('Static server error:', err);
+      res.writeHead(500);
+      res.end('Internal Server Error');
+    }
+  });
+
+  nodeServer.listen(port, '127.0.0.1', () => {
+    console.log(`Node static server listening on 127.0.0.1:${port}, root=${root}`);
   });
 }
 
 // Lambda handler
 exports.handler = async (event) => {
   try {
-    // Start nginx on first invocation
-    if (!nginxProcess) {
-      await startNginx();
+    // Start nginx on first invocation. If nginx binary is missing or fails to start,
+    // fall back to a small Node static server that serves the built files.
+    if (!nginxProcess && !nodeServer) {
+      try {
+        await startNginx();
+      } catch (err) {
+        console.warn('nginx failed to start, falling back to Node static server:', err && err.message);
+        startNodeStaticServer();
+      }
     }
 
     // Proxy the request to nginx on localhost:8080
