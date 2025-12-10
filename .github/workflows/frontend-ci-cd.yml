@@ -156,10 +156,11 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ env.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
           # Use short SHA (7 chars) for image tag
           SHORT_TAG=$(echo "${IMAGE_TAG}" | cut -c1-7)
-          docker build -f Dockerfile -e S3_BUCKET ${{ secrets.S3_BUCKET }}-t $REGISTRY/$REPOSITORY:$SHORT_TAG .
+          docker build -f Dockerfile -e S3_BUCKET=$S3_BUCKET -t $REGISTRY/$REPOSITORY:$SHORT_TAG .
           docker push $REGISTRY/$REPOSITORY:$SHORT_TAG
           echo "uri=$REGISTRY/$REPOSITORY:$SHORT_TAG" >> $GITHUB_OUTPUT
 
