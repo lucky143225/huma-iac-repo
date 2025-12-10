@@ -162,7 +162,7 @@ jobs:
           SHORT_TAG: ${{ steps.vars.outputs.SHORT_TAG }}
         run: |
           docker build --platform linux/amd64 -f frontend/Dockerfile \
-            -t $REGISTRY/$REPOSITORY:$SHORT_TAG .
+            -t $REGISTRY/$REPOSITORY:$SHORT_TAG ./frontend
           docker push $REGISTRY/$REPOSITORY:$SHORT_TAG
           echo "Image pushed: $REGISTRY/$REPOSITORY:$SHORT_TAG"
 
