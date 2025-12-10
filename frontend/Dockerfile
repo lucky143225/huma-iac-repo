@@ -31,7 +31,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy built React app (NOTE: Vite -> dist/, CRA -> build/)
 # Change to /app/build if you're using CRA instead of Vite.
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 
 # Copy Lambda handler (must export `handler`)
 # Lambda will call index.handler on each invocation
