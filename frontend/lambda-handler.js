@@ -37,15 +37,22 @@ async function startNginx() {
     if (!bin) {
       return reject(new Error('nginx binary not found'));
     }
-    // Ensure /tmp/nginx exists and is writable for logs/pid
+    // Ensure /tmp/nginx and temp subdirs exist and are writable for logs/pid and temp files
     try {
+      fs.mkdirSync('/tmp/nginx/tmp/client_body', { recursive: true });
+      fs.mkdirSync('/tmp/nginx/tmp/proxy', { recursive: true });
+      fs.mkdirSync('/tmp/nginx/tmp/fastcgi', { recursive: true });
       fs.mkdirSync('/tmp/nginx', { recursive: true });
+      // create log files so nginx can open them
+      try { fs.closeSync(fs.openSync('/tmp/nginx/error.log', 'a')); } catch(e){}
+      try { fs.closeSync(fs.openSync('/tmp/nginx/access.log', 'a')); } catch(e){}
     } catch (e) {
-      console.warn('Could not create /tmp/nginx:', e && e.message);
+      console.warn('Could not create /tmp/nginx directories:', e && e.message);
     }
 
     console.log(`Starting nginx using binary: ${bin}`);
-    nginxProcess = spawn(bin, ['-g', 'daemon off;'], {
+    // Start nginx with explicit config path to ensure our nginx.conf is used
+    nginxProcess = spawn(bin, ['-c', '/etc/nginx/nginx.conf', '-g', 'daemon off;'], {
       stdio: 'inherit',
       detached: false
     });
