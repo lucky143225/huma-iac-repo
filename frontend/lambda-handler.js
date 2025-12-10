@@ -2,6 +2,7 @@ const { spawn } = require('child_process');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const net = require('net');
 
 let nginxProcess = null;
 
@@ -128,6 +129,37 @@ function startNodeStaticServer(root = '/usr/share/nginx/html', port = 8080) {
   });
 }
 
+// Wait for a local TCP port to accept connections
+function waitForPort(port, host = '127.0.0.1', timeoutMs = 3000, interval = 100) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    function tryConnect() {
+      const sock = new net.Socket();
+      let done = false;
+      sock.setTimeout(1000);
+      sock.once('connect', () => {
+        done = true;
+        sock.destroy();
+        resolve(true);
+      });
+      sock.once('error', () => {
+        if (done) return;
+        sock.destroy();
+        if (Date.now() - start >= timeoutMs) return resolve(false);
+        setTimeout(tryConnect, interval);
+      });
+      sock.once('timeout', () => {
+        if (done) return;
+        sock.destroy();
+        if (Date.now() - start >= timeoutMs) return resolve(false);
+        setTimeout(tryConnect, interval);
+      });
+      sock.connect(port, host);
+    }
+    tryConnect();
+  });
+}
+
 // Lambda handler
 exports.handler = async (event) => {
   try {
@@ -136,6 +168,12 @@ exports.handler = async (event) => {
     if (!nginxProcess && !nodeServer) {
       try {
         await startNginx();
+        // Wait for nginx to accept connections on 127.0.0.1:8080
+        const ok = await waitForPort(8080, '127.0.0.1', 3000, 100);
+        if (!ok) {
+          console.warn('nginx did not become ready within timeout, falling back to Node static server');
+          startNodeStaticServer();
+        }
       } catch (err) {
         console.warn('nginx failed to start, falling back to Node static server:', err && err.message);
         startNodeStaticServer();
